@@ -59,8 +59,7 @@ describe("network / reqresp / encoders / responseTypes", () => {
             const returnedResponses = await pipe(
               arrToSource(lodestarResponseBodies[i]),
               responseEncodeSuccess(config, protocol),
-              // eslint-disable-next-line @typescript-eslint/no-empty-function
-              responseDecode(config, protocol, {onFirstHeader: () => {}, onFirstResponseChunk: () => {}}),
+              responseDecode(config, protocol),
               all
             );
 

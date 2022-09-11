@@ -1,29 +1,14 @@
-import {Libp2p} from "libp2p/src/connection-manager";
-import {MuxedStream} from "libp2p";
+import all from "it-all";
+import pipe from "it-pipe";
 import {LodestarError, sleep as _sleep} from "@lodestar/utils";
-import {phase0} from "@lodestar/types";
-import {config} from "@lodestar/config/default";
-import {createIBeaconConfig} from "@lodestar/config";
-import {RespStatus, timeoutOptions, ZERO_HASH} from "../../../../../src/constants/index.js";
-import {PeersData} from "../../../../../src/network/peers/peersData.js";
-import {
-  IRequestErrorMetadata,
-  RequestError,
-  RequestErrorCode,
-} from "../../../../../src/network/reqresp/request/errors.js";
-import {sendRequest} from "../../../../../src/network/reqresp/request/index.js";
-import {Encoding, Method, Version} from "../../../../../src/network/reqresp/types.js";
+import {timeoutOptions} from "../../../../../src/constants/index.js";
+import {responseTimeoutsHandler} from "../../../../../src/network/reqresp/request/responseTimeoutsHandler.js";
+import {RequestErrorCode, RequestInternalError} from "../../../../../src/network/reqresp/request/errors.js";
 import {expectRejectedWithLodestarError} from "../../../../utils/errors.js";
-import {getValidPeerId} from "../../../../utils/peer.js";
-import {testLogger} from "../../../../utils/logger.js";
-import {sszSnappySignedBeaconBlockPhase0} from "../encodingStrategies/sszSnappy/testData.js";
-import {formatProtocolId} from "../../../../../src/network/reqresp/utils/protocolId.js";
 
 /* eslint-disable require-yield */
 
 describe("network / reqresp / request / responseTimeoutsHandler", () => {
-  const logger = testLogger();
-
   let controller: AbortController;
   beforeEach(() => (controller = new AbortController()));
   afterEach(() => controller.abort());
@@ -31,105 +16,98 @@ describe("network / reqresp / request / responseTimeoutsHandler", () => {
     await _sleep(ms, controller.signal);
   }
 
-  // Generic request params not relevant to timeout tests
-  const method = Method.BeaconBlocksByRange;
-  const encoding = Encoding.SSZ_SNAPPY;
-  const version = Version.V1;
-  const requestBody: phase0.BeaconBlocksByRangeRequest = {startSlot: 0, count: 9, step: 1};
-  const maxResponses = requestBody.count; // Random high number
-  const responseChunk = Buffer.concat([Buffer.from([RespStatus.SUCCESS]), ...sszSnappySignedBeaconBlockPhase0.chunks]);
-  const protocol = formatProtocolId(method, version, encoding);
-  const peerId = getValidPeerId();
-  const metadata: IRequestErrorMetadata = {method, encoding, peer: peerId.toB58String()};
-
   /* eslint-disable @typescript-eslint/naming-convention */
   const testCases: {
     id: string;
-    opts?: Partial<typeof timeoutOptions>;
+    timeouts?: Partial<typeof timeoutOptions>;
     source: () => AsyncGenerator<Buffer>;
+    responseDecoder: (source: AsyncIterable<Buffer>) => AsyncGenerator<Buffer>;
     error?: LodestarError<any>;
   }[] = [
     {
       id: "yield values without errors",
       source: async function* () {
-        yield responseChunk.subarray(0, 1);
+        yield Buffer.from([0]);
         await sleep(0);
-        yield responseChunk.subarray(1);
+        yield Buffer.from([0]);
+      },
+      responseDecoder: async function* (source) {
+        yield* source;
       },
     },
     {
       id: "trigger a TTFB_TIMEOUT",
-      opts: {TTFB_TIMEOUT: 0},
+      timeouts: {TTFB_TIMEOUT: 0},
       source: async function* () {
         await sleep(30); // Pause for too long before first byte
-        yield responseChunk;
+        yield Buffer.from([0]);
       },
-      error: new RequestError({code: RequestErrorCode.TTFB_TIMEOUT}, metadata),
+      responseDecoder: async function* (source) {
+        yield* source;
+      },
+      error: new RequestInternalError({code: RequestErrorCode.TTFB_TIMEOUT}),
     },
     {
       id: "trigger a RESP_TIMEOUT",
-      opts: {RESP_TIMEOUT: 0},
+      timeouts: {RESP_TIMEOUT: 0},
       source: async function* () {
-        yield responseChunk.subarray(0, 1);
+        yield Buffer.from([0]);
         await sleep(30); // Pause for too long after first byte
-        yield responseChunk.subarray(1);
+        yield Buffer.from([0]);
       },
-      error: new RequestError({code: RequestErrorCode.RESP_TIMEOUT}, metadata),
+      responseDecoder: async function* (source) {
+        yield* source;
+      },
+      error: new RequestInternalError({code: RequestErrorCode.RESP_TIMEOUT}),
+    },
+    {
+      // A slow loris attack yields bytes slowly to not trigger inter-byte timeouts
+      // but the overall response take a very long time to complete
+      id: "handle a slow loris attack",
+      timeouts: {RESP_TIMEOUT: 60},
+      source: async function* () {
+        while (true) {
+          yield Buffer.from([0]);
+          await sleep(20);
+        }
+      },
+      responseDecoder: async function* (source) {
+        for await (const _ of source) {
+          // Never yield a response_chunk
+        }
+      },
+      error: new RequestInternalError({code: RequestErrorCode.RESP_TIMEOUT}),
     },
     {
       // Upstream "abortable-iterator" never throws with an infinite sleep.
       id: "Infinite sleep on first byte",
-      opts: {TTFB_TIMEOUT: 1, RESP_TIMEOUT: 1},
+      timeouts: {TTFB_TIMEOUT: 1, RESP_TIMEOUT: 1},
       source: async function* () {
         await sleep(100000);
       },
-      error: new RequestError({code: RequestErrorCode.TTFB_TIMEOUT}, metadata),
+      responseDecoder: async function* (source) {
+        yield* source;
+      },
+      error: new RequestInternalError({code: RequestErrorCode.TTFB_TIMEOUT}),
     },
     {
       id: "Infinite sleep on second chunk",
-      opts: {TTFB_TIMEOUT: 1, RESP_TIMEOUT: 1},
+      timeouts: {TTFB_TIMEOUT: 1, RESP_TIMEOUT: 1},
       source: async function* () {
-        yield responseChunk;
+        yield Buffer.from([0]);
         await sleep(100000);
       },
-      error: new RequestError({code: RequestErrorCode.RESP_TIMEOUT}, metadata),
+      responseDecoder: async function* (source) {
+        yield* source;
+      },
+      error: new RequestInternalError({code: RequestErrorCode.RESP_TIMEOUT}),
     },
   ];
+  /* eslint-enable @typescript-eslint/naming-convention */
 
-  /* eslint-disable @typescript-eslint/no-empty-function */
-
-  for (const {id, opts, source, error} of testCases) {
+  for (const {id, timeouts, source, responseDecoder, error} of testCases) {
     it(id, async () => {
-      const libp2p = ({
-        async dialProtocol() {
-          return {
-            stream: ({
-              async sink(): Promise<void> {},
-              source: source(),
-              close() {},
-              abort() {},
-            } as Partial<MuxedStream>) as MuxedStream,
-            protocol,
-          };
-        },
-      } as Partial<Libp2p>) as Libp2p;
-
-      const testPromise = sendRequest(
-        {
-          logger,
-          forkDigestContext: createIBeaconConfig(config, ZERO_HASH),
-          libp2p,
-          peersData: new PeersData(),
-        },
-        peerId,
-        method,
-        encoding,
-        [version],
-        requestBody,
-        maxResponses,
-        undefined,
-        opts
-      );
+      const testPromise = pipe(source(), responseTimeoutsHandler(responseDecoder, timeouts), all);
 
       if (error) {
         await expectRejectedWithLodestarError(testPromise, error);
