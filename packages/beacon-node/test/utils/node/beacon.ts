@@ -9,8 +9,8 @@ import {phase0} from "@lodestar/types";
 import {GENESIS_SLOT} from "@lodestar/params";
 import {BeaconStateAllForks} from "@lodestar/state-transition";
 import {isPlainObject} from "@lodestar/utils";
-import {createKeypairFromPeerId, ENR} from "@chainsafe/discv5";
 import {BeaconNode} from "../../../src/index.js";
+import {createEnr} from "../../../../cli/src/config/enr.js";
 import {createNodeJsLibp2p} from "../../../src/network/nodejs/index.js";
 import {createPeerId} from "../../../src/network/index.js";
 import {defaultNetworkOptions} from "../../../src/network/options.js";
@@ -105,11 +105,6 @@ export async function getDevBeaconNode(
     anchorState,
     wsCheckpoint: opts.wsCheckpoint,
   });
-}
-
-function createEnr(peerId: PeerId): ENR {
-  const keypair = createKeypairFromPeerId(peerId);
-  return ENR.createV4(keypair.publicKey);
 }
 
 function overwriteTargetArrayIfItems(target: unknown[], source: unknown[]): unknown[] {

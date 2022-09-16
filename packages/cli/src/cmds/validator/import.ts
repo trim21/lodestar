@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import {Keystore} from "@chainsafe/bls-keystore";
 import {YargsError, ICliCommand, getPubkeyHexFromKeystore} from "../../util/index.js";
-import {getBeaconConfigFromArgs} from "../../config/beaconParams.js";
 import {IGlobalArgs} from "../../options/index.js";
 import {validatorOptions, IValidatorCliArgs} from "./options.js";
 import {getAccountPaths} from "./paths.js";
@@ -38,8 +37,6 @@ Ethereum Foundation utility.",
   },
 
   handler: async (args) => {
-    const {network} = getBeaconConfigFromArgs(args);
-
     // This command takes: importKeystores, importKeystoresPassword
     //
     // - recursively finds keystores in importKeystores
@@ -68,7 +65,7 @@ Ethereum Foundation utility.",
         .join("\n")}`
     );
 
-    const accountPaths = getAccountPaths(args, network);
+    const accountPaths = getAccountPaths(args);
     const persistedKeystoresBackend = new PersistedKeysBackend(accountPaths);
     let importedCount = 0;
 

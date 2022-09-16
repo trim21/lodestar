@@ -22,11 +22,10 @@ export type AccountPaths = {
  * ```
  */
 export function getValidatorPaths(
-  args: Partial<IValidatorPaths> & Pick<IGlobalArgs, "dataDir">,
-  network: string
+  args: Partial<IValidatorPaths> & Pick<IGlobalArgs, "dataDir">
 ): IValidatorPaths & IGlobalPaths {
   // Compute global paths first
-  const globalPaths = getGlobalPaths(args, network);
+  const globalPaths = getGlobalPaths(args);
 
   const dataDir = globalPaths.dataDir;
   const validatorsDbDir = args.validatorsDbDir || path.join(dataDir, "validator-db");
@@ -39,7 +38,7 @@ export function getValidatorPaths(
 /**
  * Constructs representations of the path structure to show in command's description
  */
-export const defaultValidatorPaths = getValidatorPaths({dataDir: "$dataDir"}, "$network");
+export const defaultValidatorPaths = getValidatorPaths({dataDir: "$dataDir"});
 
 /**
  * Defines the path structure of the account files
@@ -64,11 +63,10 @@ export const defaultValidatorPaths = getValidatorPaths({dataDir: "$dataDir"}, "$
  */
 // Using Pick<IGlobalArgs, "dataDir"> make changes in IGlobalArgs throw a type error here
 export function getAccountPaths(
-  args: Partial<AccountPaths> & Pick<IGlobalArgs, "dataDir">,
-  network: string
+  args: Partial<AccountPaths> & Pick<IGlobalArgs, "dataDir">
 ): AccountPaths & IGlobalPaths {
   // Compute global paths first
-  const globalPaths = getGlobalPaths(args, network);
+  const globalPaths = getGlobalPaths(args);
 
   const dataDir = globalPaths.dataDir;
   const keystoresDir = args.keystoresDir || path.join(dataDir, "keystores");
@@ -85,4 +83,4 @@ export function getAccountPaths(
 /**
  * Constructs representations of the path structure to show in command's description
  */
-export const defaultAccountPaths = getAccountPaths({dataDir: "$dataDir"}, "$network");
+export const defaultAccountPaths = getAccountPaths({dataDir: "$dataDir"});

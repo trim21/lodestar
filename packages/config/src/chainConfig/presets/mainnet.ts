@@ -5,7 +5,6 @@ import {IChainConfig} from "../types.js";
 
 export const chainConfig: IChainConfig = {
   PRESET_BASE: PresetName.mainnet,
-  CONFIG_NAME: "mainnet",
 
   // Transition
   // Estimated: Sept 15, 2022

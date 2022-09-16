@@ -7,14 +7,14 @@ import {
 } from "@lodestar/config";
 import {readFile} from "../util/index.js";
 import {getNetworkBeaconParams, NetworkName} from "../networks/index.js";
-import {
-  parseBeaconParamsArgs,
-  parseTerminalPowArgs,
-  ITerminalPowArgs,
-  IGlobalArgs,
-  defaultNetwork,
-} from "../options/index.js";
+import {getGlobalPaths, IGlobalPaths} from "../paths/global.js";
+import {parseBeaconParamsArgs, parseTerminalPowArgs, ITerminalPowArgs} from "../options/index.js";
 import {IBeaconParamsUnparsed} from "./types.js";
+
+type IBeaconParamsCliArgs = {
+  network?: NetworkName;
+  paramsFile: string;
+} & Partial<IGlobalPaths>;
 
 interface IBeaconParamsArgs {
   network?: NetworkName;
@@ -26,24 +26,20 @@ interface IBeaconParamsArgs {
  * Convenience method to parse yargs CLI args and call getBeaconParams
  * @see getBeaconConfig
  */
-export function getBeaconConfigFromArgs(args: IGlobalArgs): {config: IChainForkConfig; network: string} {
-  const config = createIChainForkConfig(getBeaconParamsFromArgs(args));
-  return {
-    config,
-    network: args.network ?? config.CONFIG_NAME ?? defaultNetwork,
-  };
+export function getBeaconConfigFromArgs(args: IBeaconParamsCliArgs): IChainForkConfig {
+  return createIChainForkConfig(getBeaconParamsFromArgs(args));
 }
 
 /**
  * Convenience method to parse yargs CLI args and call getBeaconParams
  * @see getBeaconParams
  */
-export function getBeaconParamsFromArgs(args: IGlobalArgs): IChainConfig {
+export function getBeaconParamsFromArgs(args: IBeaconParamsCliArgs): IChainConfig {
   return getBeaconParams({
     network: args.network,
-    paramsFile: args.paramsFile,
+    paramsFile: getGlobalPaths(args).paramsFile,
     additionalParamsCli: {
-      ...parseBeaconParamsArgs(args as IBeaconParamsUnparsed),
+      ...parseBeaconParamsArgs(args as Record<string, string | number>),
       ...parseTerminalPowArgs(args as ITerminalPowArgs),
     },
   });

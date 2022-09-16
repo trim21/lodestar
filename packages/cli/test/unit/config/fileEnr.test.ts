@@ -1,13 +1,11 @@
 import {existsSync} from "node:fs";
-import path from "node:path";
 import {expect} from "chai";
 import {before, after} from "mocha";
 import rimraf from "rimraf";
-import PeerId from "peer-id";
 import {toHexString} from "@chainsafe/ssz";
-import {createKeypairFromPeerId, ENR} from "@chainsafe/discv5";
-import {FileENR} from "../../../src/config/index.js";
+import {initEnr, initPeerId, readPeerId, FileENR} from "../../../src/config/index.js";
 import {testFilesDir} from "../../utils.js";
+import {getBeaconPaths} from "../../../src/cmds/beacon/paths.js";
 
 describe("fileENR", function () {
   const dataDir = testFilesDir;
@@ -21,9 +19,11 @@ describe("fileENR", function () {
   });
 
   it("create ENR from file", async function () {
-    const peerId = await PeerId.create({keyType: "secp256k1"});
-    const enrFilePath = path.join(testFilesDir, "enr_file.txt");
-
+    const beaconPaths = getBeaconPaths({dataDir});
+    const enrFilePath = beaconPaths.enrFile;
+    const peerIdFile = beaconPaths.peerIdFile;
+    await initPeerId(peerIdFile);
+    const peerId = await readPeerId(peerIdFile);
     initEnr(enrFilePath, peerId);
     const enr = FileENR.initFromFile(enrFilePath, peerId);
     const newValue = new Uint8Array(55);
@@ -34,12 +34,3 @@ describe("fileENR", function () {
     expect(toHexString(updatedEnr.get("tcp") as Uint8Array) === toHexString(newValue)).to.equal(true);
   });
 });
-
-function createEnr(peerId: PeerId): ENR {
-  const keypair = createKeypairFromPeerId(peerId);
-  return ENR.createV4(keypair.publicKey);
-}
-
-function initEnr(filepath: string, peerId: PeerId): void {
-  FileENR.initFromENR(filepath, peerId, createEnr(peerId) as FileENR).saveToFile();
-}
