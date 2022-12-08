@@ -1,4 +1,4 @@
-import {BitVectorType, ContainerType, ListBasicType, ListCompositeType, VectorCompositeType} from "@chainsafe/ssz";
+import {BitVectorType, ListBasicType, ListCompositeType, VectorCompositeType} from "@chainsafe/ssz";
 import {
   FINALIZED_ROOT_DEPTH,
   NEXT_SYNC_COMMITTEE_DEPTH,
@@ -10,6 +10,7 @@ import {
   EPOCHS_PER_SYNC_COMMITTEE_PERIOD,
   SLOTS_PER_EPOCH,
 } from "@lodestar/params";
+import {namedContainerType} from "../utils/namedTypes.js";
 import * as phase0Ssz from "../phase0/sszTypes.js";
 import * as primitiveSsz from "../primitive/sszTypes.js";
 
@@ -28,24 +29,24 @@ const {
 
 export const SyncSubnets = new BitVectorType(SYNC_COMMITTEE_SUBNET_COUNT);
 
-export const Metadata = new ContainerType(
+export const Metadata = namedContainerType(
   {
     seqNumber: UintBn64,
     attnets: phase0Ssz.AttestationSubnets,
     syncnets: SyncSubnets,
   },
-  {typeName: "Metadata", jsonCase: "eth2"}
+  {typeName: "MetadataAltair", jsonCase: "eth2"}
 );
 
-export const SyncCommittee = new ContainerType(
+export const SyncCommittee = namedContainerType(
   {
-    pubkeys: new VectorCompositeType(BLSPubkey, SYNC_COMMITTEE_SIZE),
+    pubkeys: namedVectorCompositeType(BLSPubkey, SYNC_COMMITTEE_SIZE),
     aggregatePubkey: BLSPubkey,
   },
   {typeName: "SyncCommittee", jsonCase: "eth2"}
 );
 
-export const SyncCommitteeMessage = new ContainerType(
+export const SyncCommitteeMessage = namedContainerType(
   {
     slot: Slot,
     beaconBlockRoot: Root,
@@ -55,7 +56,7 @@ export const SyncCommitteeMessage = new ContainerType(
   {typeName: "SyncCommitteeMessage", jsonCase: "eth2"}
 );
 
-export const SyncCommitteeContribution = new ContainerType(
+export const SyncCommitteeContribution = namedContainerType(
   {
     slot: Slot,
     beaconBlockRoot: Root,
@@ -66,7 +67,7 @@ export const SyncCommitteeContribution = new ContainerType(
   {typeName: "SyncCommitteeContribution", jsonCase: "eth2"}
 );
 
-export const ContributionAndProof = new ContainerType(
+export const ContributionAndProof = namedContainerType(
   {
     aggregatorIndex: ValidatorIndex,
     contribution: SyncCommitteeContribution,
@@ -75,7 +76,7 @@ export const ContributionAndProof = new ContainerType(
   {typeName: "ContributionAndProof", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedContributionAndProof = new ContainerType(
+export const SignedContributionAndProof = namedContainerType(
   {
     message: ContributionAndProof,
     signature: BLSSignature,
@@ -83,7 +84,7 @@ export const SignedContributionAndProof = new ContainerType(
   {typeName: "SignedContributionAndProof", jsonCase: "eth2"}
 );
 
-export const SyncAggregatorSelectionData = new ContainerType(
+export const SyncAggregatorSelectionData = namedContainerType(
   {
     slot: Slot,
     subcommitteeIndex: SubcommitteeIndex,
@@ -93,18 +94,18 @@ export const SyncAggregatorSelectionData = new ContainerType(
 
 export const SyncCommitteeBits = new BitVectorType(SYNC_COMMITTEE_SIZE);
 
-export const SyncAggregate = new ContainerType(
+export const SyncAggregate = namedContainerType(
   {
     syncCommitteeBits: SyncCommitteeBits,
     syncCommitteeSignature: BLSSignature,
   },
-  {typeName: "SyncCommitteeBits", jsonCase: "eth2"}
+  {typeName: "SyncCommittee", jsonCase: "eth2"}
 );
 
-export const HistoricalBlockRoots = new VectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
-export const HistoricalStateRoots = new VectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
+export const HistoricalBlockRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
+export const HistoricalStateRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
 
-export const HistoricalBatch = new ContainerType(
+export const HistoricalBatch = namedContainerType(
   {
     blockRoots: HistoricalBlockRoots,
     stateRoots: HistoricalStateRoots,
@@ -112,15 +113,15 @@ export const HistoricalBatch = new ContainerType(
   {typeName: "HistoricalBatch", jsonCase: "eth2"}
 );
 
-export const BeaconBlockBody = new ContainerType(
+export const BeaconBlockBody = namedContainerType(
   {
     ...phase0Ssz.BeaconBlockBody.fields,
     syncAggregate: SyncAggregate,
   },
-  {typeName: "BeaconBlockBody", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BeaconBlockBodyAltair", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BeaconBlock = new ContainerType(
+export const BeaconBlock = namedContainerType(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -128,25 +129,25 @@ export const BeaconBlock = new ContainerType(
     stateRoot: Root,
     body: BeaconBlockBody,
   },
-  {typeName: "BeaconBlock", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BeaconBlockAltair", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBeaconBlock = new ContainerType(
+export const SignedBeaconBlock = namedContainerType(
   {
     message: BeaconBlock,
     signature: BLSSignature,
   },
-  {typeName: "SignedBeaconBlock", jsonCase: "eth2"}
+  {typeName: "SignedBeaconBlockAltair", jsonCase: "eth2"}
 );
 
-export const EpochParticipation = new ListBasicType(ParticipationFlags, VALIDATOR_REGISTRY_LIMIT);
-export const InactivityScores = new ListBasicType(UintNum64, VALIDATOR_REGISTRY_LIMIT);
+export const EpochParticipation = namedListBasicType(ParticipationFlags, VALIDATOR_REGISTRY_LIMIT);
+export const InactivityScores = namedListBasicType(UintNum64, VALIDATOR_REGISTRY_LIMIT);
 
 // we don't reuse phase0.BeaconState fields since we need to replace some keys
 // and we cannot keep order doing that
-export const BeaconState = new ContainerType(
+export const BeaconState = namedContainerType(
   {
-    genesisTime: UintNum64,
+    genesisTime: GenesisTime,
     genesisValidatorsRoot: Root,
     slot: Slot,
     fork: phase0Ssz.Fork,
@@ -154,11 +155,11 @@ export const BeaconState = new ContainerType(
     latestBlockHeader: phase0Ssz.BeaconBlockHeader,
     blockRoots: HistoricalBlockRoots,
     stateRoots: HistoricalStateRoots,
-    historicalRoots: new ListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
+    historicalRoots: namedListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
     // Eth1
     eth1Data: phase0Ssz.Eth1Data,
     eth1DataVotes: phase0Ssz.Eth1DataVotes,
-    eth1DepositIndex: UintNum64,
+    eth1DepositIndex: DepositIndex,
     // Registry
     validators: phase0Ssz.Validators,
     balances: phase0Ssz.Balances,
@@ -179,43 +180,43 @@ export const BeaconState = new ContainerType(
     currentSyncCommittee: SyncCommittee,
     nextSyncCommittee: SyncCommittee,
   },
-  {typeName: "BeaconState", jsonCase: "eth2"}
+  {typeName: "BeaconStateAltair", jsonCase: "eth2"}
 );
 
-export const LightClientBootstrap = new ContainerType(
+export const LightClientBootstrap = namedContainerType(
   {
     header: phase0Ssz.BeaconBlockHeader,
     currentSyncCommittee: SyncCommittee,
-    currentSyncCommitteeBranch: new VectorCompositeType(Bytes32, NEXT_SYNC_COMMITTEE_DEPTH),
+    currentSyncCommitteeBranch: namedVectorCompositeType(Bytes32, NEXT_SYNC_COMMITTEE_DEPTH),
   },
   {typeName: "LightClientBootstrap", jsonCase: "eth2"}
 );
 
-export const LightClientUpdate = new ContainerType(
+export const LightClientUpdate = namedContainerType(
   {
     attestedHeader: phase0Ssz.BeaconBlockHeader,
     nextSyncCommittee: SyncCommittee,
-    nextSyncCommitteeBranch: new VectorCompositeType(Bytes32, NEXT_SYNC_COMMITTEE_DEPTH),
+    nextSyncCommitteeBranch: namedVectorCompositeType(Bytes32, NEXT_SYNC_COMMITTEE_DEPTH),
     finalizedHeader: phase0Ssz.BeaconBlockHeader,
-    finalityBranch: new VectorCompositeType(Bytes32, FINALIZED_ROOT_DEPTH),
+    finalityBranch: namedVectorCompositeType(Bytes32, FINALIZED_ROOT_DEPTH),
     syncAggregate: SyncAggregate,
     signatureSlot: Slot,
   },
   {typeName: "LightClientUpdate", jsonCase: "eth2"}
 );
 
-export const LightClientFinalityUpdate = new ContainerType(
+export const LightClientFinalityUpdate = namedContainerType(
   {
     attestedHeader: phase0Ssz.BeaconBlockHeader,
     finalizedHeader: phase0Ssz.BeaconBlockHeader,
-    finalityBranch: new VectorCompositeType(Bytes32, FINALIZED_ROOT_DEPTH),
+    finalityBranch: namedVectorCompositeType(Bytes32, FINALIZED_ROOT_DEPTH),
     syncAggregate: SyncAggregate,
     signatureSlot: Slot,
   },
   {typeName: "LightClientFinalityUpdate", jsonCase: "eth2"}
 );
 
-export const LightClientOptimisticUpdate = new ContainerType(
+export const LightClientOptimisticUpdate = namedContainerType(
   {
     attestedHeader: phase0Ssz.BeaconBlockHeader,
     syncAggregate: SyncAggregate,
@@ -224,7 +225,7 @@ export const LightClientOptimisticUpdate = new ContainerType(
   {typeName: "LightClientOptimisticUpdate", jsonCase: "eth2"}
 );
 
-export const LightClientUpdatesByRange = new ContainerType(
+export const LightClientUpdatesByRange = namedContainerType(
   {
     startPeriod: UintNum64,
     count: UintNum64,
@@ -232,10 +233,10 @@ export const LightClientUpdatesByRange = new ContainerType(
   {typeName: "LightClientUpdatesByRange", jsonCase: "eth2"}
 );
 
-export const LightClientStore = new ContainerType(
+export const LightClientStore = namedContainerType(
   {
     snapshot: LightClientBootstrap,
-    validUpdates: new ListCompositeType(LightClientUpdate, EPOCHS_PER_SYNC_COMMITTEE_PERIOD * SLOTS_PER_EPOCH),
+    validUpdates: namedListCompositeType(LightClientUpdate, EPOCHS_PER_SYNC_COMMITTEE_PERIOD * SLOTS_PER_EPOCH),
   },
   {typeName: "LightClientStore", jsonCase: "eth2"}
 );

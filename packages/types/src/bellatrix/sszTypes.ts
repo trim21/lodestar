@@ -1,4 +1,4 @@
-import {ByteListType, ByteVectorType, ContainerType, ListCompositeType, VectorCompositeType} from "@chainsafe/ssz";
+import {ByteListType, ByteVectorType, ListCompositeType, VectorCompositeType} from "@chainsafe/ssz";
 import {
   BYTES_PER_LOGS_BLOOM,
   HISTORICAL_ROOTS_LIMIT,
@@ -10,6 +10,7 @@ import {
 import {ssz as primitiveSsz} from "../primitive/index.js";
 import {ssz as phase0Ssz} from "../phase0/index.js";
 import {ssz as altairSsz} from "../altair/index.js";
+import {namedContainerType} from "../utils/namedTypes.js";
 
 const {
   Bytes32,
@@ -35,7 +36,7 @@ export const Transaction = new ByteListType(MAX_BYTES_PER_TRANSACTION);
  *
  * Spec v1.0.1
  */
-export const Transactions = new ListCompositeType(Transaction, MAX_TRANSACTIONS_PER_PAYLOAD);
+export const Transactions = namedListCompositeType(Transaction, MAX_TRANSACTIONS_PER_PAYLOAD);
 
 const executionPayloadFields = {
   parentHash: Root,
@@ -55,31 +56,31 @@ const executionPayloadFields = {
   blockHash: Root,
 };
 
-export const ExecutionPayload = new ContainerType(
+export const ExecutionPayload = namedContainerType(
   {
     ...executionPayloadFields,
     transactions: Transactions,
   },
-  {typeName: "ExecutionPayload", jsonCase: "eth2"}
+  {typeName: "ExecutionPayloadBellatrix", jsonCase: "eth2"}
 );
 
-export const ExecutionPayloadHeader = new ContainerType(
+export const ExecutionPayloadHeader = namedContainerType(
   {
     ...executionPayloadFields,
     transactionsRoot: Root,
   },
-  {typeName: "ExecutionPayloadHeader", jsonCase: "eth2"}
+  {typeName: "ExecutionPayloadHeaderBellatrix", jsonCase: "eth2"}
 );
 
-export const BeaconBlockBody = new ContainerType(
+export const BeaconBlockBody = namedContainerType(
   {
     ...altairSsz.BeaconBlockBody.fields,
     executionPayload: ExecutionPayload,
   },
-  {typeName: "BeaconBlockBody", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BeaconBlockBodyBellatrix", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BeaconBlock = new ContainerType(
+export const BeaconBlock = namedContainerType(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -88,18 +89,18 @@ export const BeaconBlock = new ContainerType(
     stateRoot: Root,
     body: BeaconBlockBody,
   },
-  {typeName: "BeaconBlock", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BeaconBlockBellatrix", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBeaconBlock = new ContainerType(
+export const SignedBeaconBlock = namedContainerType(
   {
     message: BeaconBlock,
     signature: BLSSignature,
   },
-  {typeName: "SignedBeaconBlock", jsonCase: "eth2"}
+  {typeName: "SignedBeaconBlockBellatrix", jsonCase: "eth2"}
 );
 
-export const PowBlock = new ContainerType(
+export const PowBlock = namedContainerType(
   {
     blockHash: Root,
     parentHash: Root,
@@ -109,10 +110,10 @@ export const PowBlock = new ContainerType(
 );
 
 // Re-declare with the new expanded type
-export const HistoricalBlockRoots = new VectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
-export const HistoricalStateRoots = new VectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
+export const HistoricalBlockRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
+export const HistoricalStateRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
 
-export const HistoricalBatch = new ContainerType(
+export const HistoricalBatch = namedContainerType(
   {
     blockRoots: HistoricalBlockRoots,
     stateRoots: HistoricalStateRoots,
@@ -122,9 +123,9 @@ export const HistoricalBatch = new ContainerType(
 
 // we don't reuse phase0.BeaconState fields since we need to replace some keys
 // and we cannot keep order doing that
-export const BeaconState = new ContainerType(
+export const BeaconState = namedContainerType(
   {
-    genesisTime: UintNum64,
+    genesisTime: GenesisTime,
     genesisValidatorsRoot: Root,
     slot: primitiveSsz.Slot,
     fork: phase0Ssz.Fork,
@@ -132,11 +133,11 @@ export const BeaconState = new ContainerType(
     latestBlockHeader: phase0Ssz.BeaconBlockHeader,
     blockRoots: HistoricalBlockRoots,
     stateRoots: HistoricalStateRoots,
-    historicalRoots: new ListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
+    historicalRoots: namedListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
     // Eth1
     eth1Data: phase0Ssz.Eth1Data,
     eth1DataVotes: phase0Ssz.Eth1DataVotes,
-    eth1DepositIndex: UintNum64,
+    eth1DepositIndex: DepositIndex,
     // Registry
     validators: phase0Ssz.Validators,
     balances: phase0Ssz.Balances,
@@ -159,18 +160,18 @@ export const BeaconState = new ContainerType(
     // Execution
     latestExecutionPayloadHeader: ExecutionPayloadHeader, // [New in Merge]
   },
-  {typeName: "BeaconState", jsonCase: "eth2"}
+  {typeName: "BeaconStateBellatrix", jsonCase: "eth2"}
 );
 
-export const BlindedBeaconBlockBody = new ContainerType(
+export const BlindedBeaconBlockBody = namedContainerType(
   {
     ...altairSsz.BeaconBlockBody.fields,
     executionPayloadHeader: ExecutionPayloadHeader,
   },
-  {typeName: "BlindedBeaconBlockBody", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BlindedBeaconBlockBodyBellatrix", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BlindedBeaconBlock = new ContainerType(
+export const BlindedBeaconBlock = namedContainerType(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -179,18 +180,18 @@ export const BlindedBeaconBlock = new ContainerType(
     stateRoot: Root,
     body: BlindedBeaconBlockBody,
   },
-  {typeName: "BlindedBeaconBlock", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BlindedBeaconBlockBellatrix", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBlindedBeaconBlock = new ContainerType(
+export const SignedBlindedBeaconBlock = namedContainerType(
   {
     message: BlindedBeaconBlock,
     signature: BLSSignature,
   },
-  {typeName: "SignedBlindedBeaconBlock", jsonCase: "eth2"}
+  {typeName: "SignedBlindedBeaconBlockBellatrix", jsonCase: "eth2"}
 );
 
-export const ValidatorRegistrationV1 = new ContainerType(
+export const ValidatorRegistrationV1 = namedContainerType(
   {
     feeRecipient: ExecutionAddress,
     gasLimit: UintNum64,
@@ -200,7 +201,7 @@ export const ValidatorRegistrationV1 = new ContainerType(
   {typeName: "ValidatorRegistrationV1", jsonCase: "eth2"}
 );
 
-export const SignedValidatorRegistrationV1 = new ContainerType(
+export const SignedValidatorRegistrationV1 = namedContainerType(
   {
     message: ValidatorRegistrationV1,
     signature: BLSSignature,
@@ -208,7 +209,7 @@ export const SignedValidatorRegistrationV1 = new ContainerType(
   {typeName: "SignedValidatorRegistrationV1", jsonCase: "eth2"}
 );
 
-export const BuilderBid = new ContainerType(
+export const BuilderBid = namedContainerType(
   {
     header: ExecutionPayloadHeader,
     value: Uint256,
@@ -217,7 +218,7 @@ export const BuilderBid = new ContainerType(
   {typeName: "BuilderBid", jsonCase: "eth2"}
 );
 
-export const SignedBuilderBid = new ContainerType(
+export const SignedBuilderBid = namedContainerType(
   {
     message: BuilderBid,
     signature: BLSSignature,

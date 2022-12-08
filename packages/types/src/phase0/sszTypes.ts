@@ -1,13 +1,4 @@
-import {
-  BitListType,
-  BitVectorType,
-  ContainerType,
-  ContainerNodeStructType,
-  ListBasicType,
-  ListCompositeType,
-  VectorBasicType,
-  VectorCompositeType,
-} from "@chainsafe/ssz";
+import {BitListType, BitVectorType} from "@chainsafe/ssz";
 import {
   ATTESTATION_SUBNET_COUNT,
   DEPOSIT_CONTRACT_TREE_DEPTH,
@@ -27,6 +18,14 @@ import {
   SLOTS_PER_HISTORICAL_ROOT,
   VALIDATOR_REGISTRY_LIMIT,
 } from "@lodestar/params";
+import {
+  namedContainerNodeStructType,
+  namedContainerType,
+  namedListBasicType,
+  namedListCompositeType,
+  namedVectorBasicType,
+  namedVectorCompositeType,
+} from "../utils/namedTypes.js";
 import * as primitiveSsz from "../primitive/sszTypes.js";
 
 const {
@@ -46,6 +45,8 @@ const {
   BLSPubkey,
   BLSSignature,
   Domain,
+  GenesisTime,
+  DepositIndex,
 } = primitiveSsz;
 
 // Misc types
@@ -54,7 +55,7 @@ const {
 export const AttestationSubnets = new BitVectorType(ATTESTATION_SUBNET_COUNT);
 
 /** BeaconBlockHeader where slot is bounded by the clock, and values above it are invalid */
-export const BeaconBlockHeader = new ContainerType(
+export const BeaconBlockHeader = namedContainerType(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -66,7 +67,7 @@ export const BeaconBlockHeader = new ContainerType(
 );
 
 /** BeaconBlockHeader where slot is NOT bounded by the clock, i.e. slashings. So slot is a bigint. */
-export const BeaconBlockHeaderBigint = new ContainerType(
+export const BeaconBlockHeaderBigint = namedContainerType(
   {
     slot: UintBn64,
     proposerIndex: ValidatorIndex,
@@ -77,7 +78,7 @@ export const BeaconBlockHeaderBigint = new ContainerType(
   {typeName: "BeaconBlockHeader", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBeaconBlockHeader = new ContainerType(
+export const SignedBeaconBlockHeader = namedContainerType(
   {
     message: BeaconBlockHeader,
     signature: BLSSignature,
@@ -86,7 +87,7 @@ export const SignedBeaconBlockHeader = new ContainerType(
 );
 
 /** Same as `SignedBeaconBlockHeader` but slot is not bounded by the clock and must be a bigint */
-export const SignedBeaconBlockHeaderBigint = new ContainerType(
+export const SignedBeaconBlockHeaderBigint = namedContainerType(
   {
     message: BeaconBlockHeaderBigint,
     signature: BLSSignature,
@@ -95,7 +96,7 @@ export const SignedBeaconBlockHeaderBigint = new ContainerType(
 );
 
 /** Checkpoint where epoch is bounded by the clock, and values above it are invalid */
-export const Checkpoint = new ContainerType(
+export const Checkpoint = namedContainerType(
   {
     epoch: Epoch,
     root: Root,
@@ -104,7 +105,7 @@ export const Checkpoint = new ContainerType(
 );
 
 /** Checkpoint where epoch is NOT bounded by the clock, so must be a bigint */
-export const CheckpointBigint = new ContainerType(
+export const CheckpointBigint = namedContainerType(
   {
     epoch: UintBn64,
     root: Root,
@@ -114,9 +115,11 @@ export const CheckpointBigint = new ContainerType(
 
 export const CommitteeBits = new BitListType(MAX_VALIDATORS_PER_COMMITTEE);
 
-export const CommitteeIndices = new ListBasicType(ValidatorIndex, MAX_VALIDATORS_PER_COMMITTEE);
+export const CommitteeIndices = namedListBasicType(ValidatorIndex, MAX_VALIDATORS_PER_COMMITTEE, {
+  typeName: "CommitteeIndices",
+});
 
-export const DepositMessage = new ContainerType(
+export const DepositMessage = namedContainerType(
   {
     pubkey: BLSPubkey,
     withdrawalCredentials: Bytes32,
@@ -125,7 +128,7 @@ export const DepositMessage = new ContainerType(
   {typeName: "DepositMessage", jsonCase: "eth2"}
 );
 
-export const DepositData = new ContainerType(
+export const DepositData = namedContainerType(
   {
     pubkey: BLSPubkey,
     withdrawalCredentials: Bytes32,
@@ -135,9 +138,11 @@ export const DepositData = new ContainerType(
   {typeName: "DepositData", jsonCase: "eth2"}
 );
 
-export const DepositDataRootList = new ListCompositeType(Root, 2 ** DEPOSIT_CONTRACT_TREE_DEPTH);
+export const DepositDataRootList = namedListCompositeType(Root, 2 ** DEPOSIT_CONTRACT_TREE_DEPTH, {
+  typeName: "DepositDataRootList",
+});
 
-export const DepositEvent = new ContainerType(
+export const DepositEvent = namedContainerType(
   {
     depositData: DepositData,
     blockNumber: UintNum64,
@@ -146,7 +151,7 @@ export const DepositEvent = new ContainerType(
   {typeName: "DepositEvent", jsonCase: "eth2"}
 );
 
-export const Eth1Data = new ContainerType(
+export const Eth1Data = namedContainerType(
   {
     depositRoot: Root,
     depositCount: UintNum64,
@@ -155,9 +160,11 @@ export const Eth1Data = new ContainerType(
   {typeName: "Eth1Data", jsonCase: "eth2"}
 );
 
-export const Eth1DataVotes = new ListCompositeType(Eth1Data, EPOCHS_PER_ETH1_VOTING_PERIOD * SLOTS_PER_EPOCH);
+export const Eth1DataVotes = namedListCompositeType(Eth1Data, EPOCHS_PER_ETH1_VOTING_PERIOD * SLOTS_PER_EPOCH, {
+  typeName: "Eth1DataVotes",
+});
 
-export const Eth1DataOrdered = new ContainerType(
+export const Eth1DataOrdered = namedContainerType(
   {
     depositRoot: Root,
     depositCount: UintNum64,
@@ -168,7 +175,7 @@ export const Eth1DataOrdered = new ContainerType(
 );
 
 /** Spec'ed but only used in lodestar as a type */
-export const Eth1Block = new ContainerType(
+export const Eth1Block = namedContainerType(
   {
     timestamp: UintNum64,
     depositRoot: Root,
@@ -177,7 +184,7 @@ export const Eth1Block = new ContainerType(
   {typeName: "Eth1Block", jsonCase: "eth2"}
 );
 
-export const Fork = new ContainerType(
+export const Fork = namedContainerType(
   {
     previousVersion: Version,
     currentVersion: Version,
@@ -186,7 +193,7 @@ export const Fork = new ContainerType(
   {typeName: "Fork", jsonCase: "eth2"}
 );
 
-export const ForkData = new ContainerType(
+export const ForkData = namedContainerType(
   {
     currentVersion: Version,
     genesisValidatorsRoot: Root,
@@ -194,7 +201,7 @@ export const ForkData = new ContainerType(
   {typeName: "ForkData", jsonCase: "eth2"}
 );
 
-export const ENRForkID = new ContainerType(
+export const ENRForkID = namedContainerType(
   {
     forkDigest: ForkDigest,
     nextForkVersion: Version,
@@ -203,10 +210,14 @@ export const ENRForkID = new ContainerType(
   {typeName: "ENRForkID", jsonCase: "eth2"}
 );
 
-export const HistoricalBlockRoots = new VectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
-export const HistoricalStateRoots = new VectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
+export const HistoricalBlockRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT, {
+  typeName: "HistoricalBlockRoots",
+});
+export const HistoricalStateRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT, {
+  typeName: "HistoricalStateRoots",
+});
 
-export const HistoricalBatch = new ContainerType(
+export const HistoricalBatch = namedContainerType(
   {
     blockRoots: HistoricalBlockRoots,
     stateRoots: HistoricalStateRoots,
@@ -218,7 +229,7 @@ export const HistoricalBatch = new ContainerType(
  * Non-spec'ed helper type to allow efficient hashing in epoch transition.
  * This type is like a 'Header' of HistoricalBatch where its fields are hashed.
  */
-export const HistoricalBatchRoots = new ContainerType(
+export const HistoricalBatchRoots = namedContainerType(
   {
     blockRoots: Root, // Hashed HistoricalBlockRoots
     stateRoots: Root, // Hashed HistoricalStateRoots
@@ -226,7 +237,9 @@ export const HistoricalBatchRoots = new ContainerType(
   {typeName: "HistoricalBatchRoots", jsonCase: "eth2"}
 );
 
-export const ValidatorContainer = new ContainerType(
+export const HistoricalRoots = namedListCompositeType(Root, HISTORICAL_ROOTS_LIMIT, {typeName: "HistoricalRoots"});
+
+export const ValidatorContainer = namedContainerType(
   {
     pubkey: BLSPubkey,
     withdrawalCredentials: Bytes32,
@@ -240,20 +253,22 @@ export const ValidatorContainer = new ContainerType(
   {typeName: "Validator", jsonCase: "eth2"}
 );
 
-export const ValidatorNodeStruct = new ContainerNodeStructType(ValidatorContainer.fields, ValidatorContainer.opts);
+export const ValidatorNodeStruct = namedContainerNodeStructType(ValidatorContainer.fields, ValidatorContainer.opts);
 // The main Validator type is the 'ContainerNodeStructType' version
 export const Validator = ValidatorNodeStruct;
 
 // Export as stand-alone for direct tree optimizations
-export const Validators = new ListCompositeType(ValidatorNodeStruct, VALIDATOR_REGISTRY_LIMIT);
-export const Balances = new ListBasicType(UintNum64, VALIDATOR_REGISTRY_LIMIT);
-export const RandaoMixes = new VectorCompositeType(Bytes32, EPOCHS_PER_HISTORICAL_VECTOR);
-export const Slashings = new VectorBasicType(Gwei, EPOCHS_PER_SLASHINGS_VECTOR);
+export const Validators = namedListCompositeType(ValidatorNodeStruct, VALIDATOR_REGISTRY_LIMIT, {
+  typeName: "Validators",
+});
+export const Balances = namedListBasicType(UintNum64, VALIDATOR_REGISTRY_LIMIT, {typeName: "Balances"});
+export const RandaoMixes = namedVectorCompositeType(Bytes32, EPOCHS_PER_HISTORICAL_VECTOR, {typeName: "RandaoMixes"});
+export const Slashings = namedVectorBasicType(Gwei, EPOCHS_PER_SLASHINGS_VECTOR, {typeName: "Slashings"});
 export const JustificationBits = new BitVectorType(JUSTIFICATION_BITS_LENGTH);
 
 // Misc dependants
 
-export const AttestationData = new ContainerType(
+export const AttestationData = namedContainerType(
   {
     slot: Slot,
     index: CommitteeIndex,
@@ -265,7 +280,7 @@ export const AttestationData = new ContainerType(
 );
 
 /** Same as `AttestationData` but epoch, slot and index are not bounded and must be a bigint */
-export const AttestationDataBigint = new ContainerType(
+export const AttestationDataBigint = namedContainerType(
   {
     slot: UintBn64,
     index: UintBn64,
@@ -276,7 +291,7 @@ export const AttestationDataBigint = new ContainerType(
   {typeName: "AttestationData", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const IndexedAttestation = new ContainerType(
+export const IndexedAttestation = namedContainerType(
   {
     attestingIndices: CommitteeIndices,
     data: AttestationData,
@@ -286,7 +301,7 @@ export const IndexedAttestation = new ContainerType(
 );
 
 /** Same as `IndexedAttestation` but epoch, slot and index are not bounded and must be a bigint */
-export const IndexedAttestationBigint = new ContainerType(
+export const IndexedAttestationBigint = namedContainerType(
   {
     attestingIndices: CommitteeIndices,
     data: AttestationDataBigint,
@@ -295,7 +310,7 @@ export const IndexedAttestationBigint = new ContainerType(
   {typeName: "IndexedAttestation", jsonCase: "eth2"}
 );
 
-export const PendingAttestation = new ContainerType(
+export const PendingAttestation = namedContainerType(
   {
     aggregationBits: CommitteeBits,
     data: AttestationData,
@@ -305,7 +320,7 @@ export const PendingAttestation = new ContainerType(
   {typeName: "PendingAttestation", jsonCase: "eth2"}
 );
 
-export const SigningData = new ContainerType(
+export const SigningData = namedContainerType(
   {
     objectRoot: Root,
     domain: Domain,
@@ -316,7 +331,7 @@ export const SigningData = new ContainerType(
 // Operations types
 // ================
 
-export const Attestation = new ContainerType(
+export const Attestation = namedContainerType(
   {
     aggregationBits: CommitteeBits,
     data: AttestationData,
@@ -325,7 +340,7 @@ export const Attestation = new ContainerType(
   {typeName: "Attestation", jsonCase: "eth2"}
 );
 
-export const AttesterSlashing = new ContainerType(
+export const AttesterSlashing = namedContainerType(
   {
     // In state transition, AttesterSlashing attestations are only partially validated. Their slot and epoch could
     // be higher than the clock and the slashing would still be valid. Same applies to attestation data index, which
@@ -336,15 +351,15 @@ export const AttesterSlashing = new ContainerType(
   {typeName: "AttesterSlashing", jsonCase: "eth2"}
 );
 
-export const Deposit = new ContainerType(
+export const Deposit = namedContainerType(
   {
-    proof: new VectorCompositeType(Bytes32, DEPOSIT_CONTRACT_TREE_DEPTH + 1),
+    proof: namedVectorCompositeType(Bytes32, DEPOSIT_CONTRACT_TREE_DEPTH + 1, {typeName: "DepositProof"}),
     data: DepositData,
   },
   {typeName: "Deposit", jsonCase: "eth2"}
 );
 
-export const ProposerSlashing = new ContainerType(
+export const ProposerSlashing = namedContainerType(
   {
     // In state transition, ProposerSlashing headers are only partially validated. Their slot could be higher than the
     // clock and the slashing would still be valid. Must use bigint variants to hash correctly to all possible values
@@ -354,7 +369,7 @@ export const ProposerSlashing = new ContainerType(
   {typeName: "ProposerSlashing", jsonCase: "eth2"}
 );
 
-export const VoluntaryExit = new ContainerType(
+export const VoluntaryExit = namedContainerType(
   {
     epoch: Epoch,
     validatorIndex: ValidatorIndex,
@@ -362,7 +377,7 @@ export const VoluntaryExit = new ContainerType(
   {typeName: "VoluntaryExit", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedVoluntaryExit = new ContainerType(
+export const SignedVoluntaryExit = namedContainerType(
   {
     message: VoluntaryExit,
     signature: BLSSignature,
@@ -373,21 +388,25 @@ export const SignedVoluntaryExit = new ContainerType(
 // Block types
 // ===========
 
-export const BeaconBlockBody = new ContainerType(
+export const BeaconBlockBody = namedContainerType(
   {
     randaoReveal: BLSSignature,
     eth1Data: Eth1Data,
     graffiti: Bytes32,
-    proposerSlashings: new ListCompositeType(ProposerSlashing, MAX_PROPOSER_SLASHINGS),
-    attesterSlashings: new ListCompositeType(AttesterSlashing, MAX_ATTESTER_SLASHINGS),
-    attestations: new ListCompositeType(Attestation, MAX_ATTESTATIONS),
-    deposits: new ListCompositeType(Deposit, MAX_DEPOSITS),
-    voluntaryExits: new ListCompositeType(SignedVoluntaryExit, MAX_VOLUNTARY_EXITS),
+    proposerSlashings: namedListCompositeType(ProposerSlashing, MAX_PROPOSER_SLASHINGS, {
+      typeName: "ProposerSlashings",
+    }),
+    attesterSlashings: namedListCompositeType(AttesterSlashing, MAX_ATTESTER_SLASHINGS, {
+      typeName: "AttesterSlashings",
+    }),
+    attestations: namedListCompositeType(Attestation, MAX_ATTESTATIONS, {typeName: "Attestations"}),
+    deposits: namedListCompositeType(Deposit, MAX_DEPOSITS, {typeName: "Deposits"}),
+    voluntaryExits: namedListCompositeType(SignedVoluntaryExit, MAX_VOLUNTARY_EXITS, {typeName: "VoluntaryExits"}),
   },
-  {typeName: "BeaconBlockBody", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BeaconBlockBodyPhase0", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BeaconBlock = new ContainerType(
+export const BeaconBlock = namedContainerType(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -395,26 +414,28 @@ export const BeaconBlock = new ContainerType(
     stateRoot: Root,
     body: BeaconBlockBody,
   },
-  {typeName: "BeaconBlock", jsonCase: "eth2", cachePermanentRootStruct: true}
+  {typeName: "BeaconBlockPhase0", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBeaconBlock = new ContainerType(
+export const SignedBeaconBlock = namedContainerType(
   {
     message: BeaconBlock,
     signature: BLSSignature,
   },
-  {typeName: "SignedBeaconBlock", jsonCase: "eth2"}
+  {typeName: "SignedBeaconBlockPhase0", jsonCase: "eth2"}
 );
 
 // State types
 // ===========
 
-export const EpochAttestations = new ListCompositeType(PendingAttestation, MAX_ATTESTATIONS * SLOTS_PER_EPOCH);
+export const EpochAttestations = namedListCompositeType(PendingAttestation, MAX_ATTESTATIONS * SLOTS_PER_EPOCH, {
+  typeName: "EpochAttestations",
+});
 
-export const BeaconState = new ContainerType(
+export const BeaconState = namedContainerType(
   {
     // Misc
-    genesisTime: UintNum64,
+    genesisTime: GenesisTime,
     genesisValidatorsRoot: Root,
     slot: Slot,
     fork: Fork,
@@ -422,11 +443,11 @@ export const BeaconState = new ContainerType(
     latestBlockHeader: BeaconBlockHeader,
     blockRoots: HistoricalBlockRoots,
     stateRoots: HistoricalStateRoots,
-    historicalRoots: new ListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
+    historicalRoots: HistoricalRoots,
     // Eth1
     eth1Data: Eth1Data,
     eth1DataVotes: Eth1DataVotes,
-    eth1DepositIndex: UintNum64,
+    eth1DepositIndex: DepositIndex,
     // Registry
     validators: Validators,
     balances: Balances,
@@ -442,13 +463,13 @@ export const BeaconState = new ContainerType(
     currentJustifiedCheckpoint: Checkpoint,
     finalizedCheckpoint: Checkpoint,
   },
-  {typeName: "BeaconState", jsonCase: "eth2"}
+  {typeName: "BeaconStatePhase0", jsonCase: "eth2"}
 );
 
 // Validator types
 // ===============
 
-export const CommitteeAssignment = new ContainerType(
+export const CommitteeAssignment = namedContainerType(
   {
     validators: CommitteeIndices,
     committeeIndex: CommitteeIndex,
@@ -457,7 +478,7 @@ export const CommitteeAssignment = new ContainerType(
   {typeName: "CommitteeAssignment", jsonCase: "eth2"}
 );
 
-export const AggregateAndProof = new ContainerType(
+export const AggregateAndProof = namedContainerType(
   {
     aggregatorIndex: ValidatorIndex,
     aggregate: Attestation,
@@ -466,7 +487,7 @@ export const AggregateAndProof = new ContainerType(
   {typeName: "AggregateAndProof", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedAggregateAndProof = new ContainerType(
+export const SignedAggregateAndProof = namedContainerType(
   {
     message: AggregateAndProof,
     signature: BLSSignature,
@@ -477,7 +498,7 @@ export const SignedAggregateAndProof = new ContainerType(
 // ReqResp types
 // =============
 
-export const Status = new ContainerType(
+export const Status = namedContainerType(
   {
     forkDigest: ForkDigest,
     finalizedRoot: Root,
@@ -492,7 +513,7 @@ export const Goodbye = UintBn64;
 
 export const Ping = UintBn64;
 
-export const Metadata = new ContainerType(
+export const Metadata = namedContainerType(
   {
     seqNumber: UintBn64,
     attnets: AttestationSubnets,
@@ -500,7 +521,7 @@ export const Metadata = new ContainerType(
   {typeName: "Metadata", jsonCase: "eth2"}
 );
 
-export const BeaconBlocksByRangeRequest = new ContainerType(
+export const BeaconBlocksByRangeRequest = namedContainerType(
   {
     startSlot: Slot,
     count: UintNum64,
@@ -509,15 +530,17 @@ export const BeaconBlocksByRangeRequest = new ContainerType(
   {typeName: "BeaconBlocksByRangeRequest", jsonCase: "eth2"}
 );
 
-export const BeaconBlocksByRootRequest = new ListCompositeType(Root, MAX_REQUEST_BLOCKS);
+export const BeaconBlocksByRootRequest = namedListCompositeType(Root, MAX_REQUEST_BLOCKS, {
+  typeName: "BeaconBlocksByRootRequest",
+});
 
 // Api types
 // =========
 
-export const Genesis = new ContainerType(
+export const Genesis = namedContainerType(
   {
     genesisValidatorsRoot: Root,
-    genesisTime: UintNum64,
+    genesisTime: GenesisTime,
     genesisForkVersion: Version,
   },
   {typeName: "Genesis", jsonCase: "eth2"}
