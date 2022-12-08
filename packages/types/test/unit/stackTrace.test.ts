@@ -27,10 +27,10 @@ describe("stack traces with proper names", () => {
 
     expect(stackRows).deep.equals([
       "readVariableOffsets",
-      "ExecutionPayloadHeaderCapellaType.getFieldRanges",
-      "ExecutionPayloadHeaderCapellaType.value_deserializeFromBytes",
-      "BeaconStateCapellaType.value_deserializeFromBytes",
-      "BeaconStateCapellaType.deserialize",
+      "ExecutionPayloadHeaderCapella.getFieldRanges",
+      "ExecutionPayloadHeaderCapella.value_deserializeFromBytes",
+      "BeaconStateCapella.value_deserializeFromBytes",
+      "BeaconStateCapella.deserialize",
     ]);
   });
 });

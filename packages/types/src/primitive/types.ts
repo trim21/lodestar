@@ -5,6 +5,11 @@ import * as ssz from "./sszTypes.js";
 // (a typescript interface) and a run-time ssz type (a javascript variable)
 // For more information, see ./index.ts
 
+/** Common non-spec type to represent roots as strings */
+export type RootHex = string;
+/** Non-spec type to signal time is represented in seconds */
+export type TimeSeconds = number;
+
 export type Bytes4 = ValueOf<typeof ssz.Bytes4>;
 export type Bytes8 = ValueOf<typeof ssz.Bytes8>;
 export type Bytes20 = ValueOf<typeof ssz.Bytes20>;
@@ -22,26 +27,34 @@ export type UintBn256 = ValueOf<typeof ssz.UintBn256>;
 
 // Custom types, defined for type hinting and readability
 
-export type Slot = UintNumInf64;
-export type Epoch = UintNumInf64;
-export type SyncPeriod = UintNum64;
-export type CommitteeIndex = UintNum64;
-export type SubcommitteeIndex = UintNum64;
-export type ValidatorIndex = UintNum64;
-export type WithdrawalIndex = UintNum64;
-export type Gwei = UintBn64;
-export type Root = Bytes32;
-export type Version = Bytes4;
-export type DomainType = Bytes4;
-export type ForkDigest = Bytes4;
-export type Domain = Bytes32;
-export type BLSPubkey = Bytes48;
-export type BLSSecretKey = Bytes32;
-export type BLSSignature = Bytes96;
-export type ParticipationFlags = Uint8;
-export type ExecutionAddress = Bytes20;
-
-/** Common non-spec type to represent roots as strings */
-export type RootHex = string;
-/** Non-spec type to signal time is represented in seconds */
-export type TimeSeconds = number;
+export type Slot = ValueOf<typeof ssz.Slot>;
+export type SlotBn = ValueOf<typeof ssz.SlotBn>;
+export type Epoch = ValueOf<typeof ssz.Epoch>;
+export type EpochInf = ValueOf<typeof ssz.EpochInf>;
+export type EpochBn = ValueOf<typeof ssz.EpochBn>;
+export type SyncPeriod = ValueOf<typeof ssz.SyncPeriod>;
+export type CommitteeIndex = ValueOf<typeof ssz.CommitteeIndex>;
+export type SubcommitteeIndex = ValueOf<typeof ssz.SubcommitteeIndex>;
+export type ValidatorIndex = ValueOf<typeof ssz.ValidatorIndex>;
+export type WithdrawalIndex = ValueOf<typeof ssz.WithdrawalIndex>;
+export type ActivationEligibilityEpoch = ValueOf<typeof ssz.ActivationEligibilityEpoch>;
+export type ActivationEpoch = ValueOf<typeof ssz.ActivationEpoch>;
+export type ExitEpoch = ValueOf<typeof ssz.ExitEpoch>;
+export type WithdrawableEpoch = ValueOf<typeof ssz.WithdrawableEpoch>;
+export type Gwei = ValueOf<typeof ssz.Gwei>;
+export type Root = ValueOf<typeof ssz.Root>;
+export type Version = ValueOf<typeof ssz.Version>;
+export type DomainType = ValueOf<typeof ssz.DomainType>;
+export type ForkDigest = ValueOf<typeof ssz.ForkDigest>;
+export type BLSPubkey = ValueOf<typeof ssz.BLSPubkey>;
+export type BLSSignature = ValueOf<typeof ssz.BLSSignature>;
+export type Domain = ValueOf<typeof ssz.Domain>;
+export type ParticipationFlags = ValueOf<typeof ssz.ParticipationFlags>;
+export type ExecutionAddress = ValueOf<typeof ssz.ExecutionAddress>;
+export type WithdrawalCredentials = ValueOf<typeof ssz.WithdrawalCredentials>;
+export type BlockHash = ValueOf<typeof ssz.BlockHash>;
+export type Graffiti = ValueOf<typeof ssz.Graffiti>;
+export type Amount = ValueOf<typeof ssz.Amount>;
+export type GenesisTime = ValueOf<typeof ssz.GenesisTime>;
+export type DepositIndex = ValueOf<typeof ssz.DepositIndex>;
+export type EffectiveBalance = ValueOf<typeof ssz.EffectiveBalance>;

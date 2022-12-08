@@ -1,39 +1,30 @@
-import {ListCompositeType, ByteVectorType} from "@chainsafe/ssz";
+import {ContainerType, ListCompositeType, ByteVectorType, UintBigintType} from "@chainsafe/ssz";
 import {
-  HISTORICAL_ROOTS_LIMIT,
   FIELD_ELEMENTS_PER_BLOB,
   MAX_BLOBS_PER_BLOCK,
   MAX_REQUEST_BLOCKS,
   BYTES_PER_FIELD_ELEMENT,
 } from "@lodestar/params";
-import {namedContainerType} from "../utils/namedTypes.js";
 import {ssz as primitiveSsz} from "../primitive/index.js";
 import {ssz as phase0Ssz} from "../phase0/index.js";
 import {ssz as altairSsz} from "../altair/index.js";
 import {ssz as capellaSsz} from "../capella/index.js";
 
-const {UintNum64, Slot, Root, BLSSignature, UintBn256, Bytes32, Bytes48, Bytes96} = primitiveSsz;
+const {UintNum64, Slot, Root, BLSSignature, GenesisTime, DepositIndex} = primitiveSsz;
 
-// Polynomial commitments
-// https://github.com/ethereum/consensus-specs/blob/dev/specs/eip4844/polynomial-commitments.md
-
-// Custom types
-// https://github.com/ethereum/consensus-specs/blob/dev/specs/eip4844/polynomial-commitments.md#custom-types
-export const G1Point = Bytes48;
-export const G2Point = Bytes96;
-export const BLSFieldElement = Bytes32;
-export const KZGCommitment = Bytes48;
-export const KZGProof = Bytes48;
-
-// Beacon chain
-
-// Custom types
-// https://github.com/ethereum/consensus-specs/blob/dev/specs/eip4844/beacon-chain.md#custom-types
-
-export const Blob = new ByteVectorType(BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB);
-export const Blobs = namedListCompositeType(Blob, MAX_BLOBS_PER_BLOCK);
-export const VersionedHash = Bytes32;
-export const BlobKzgCommitments = namedListCompositeType(KZGCommitment, MAX_BLOBS_PER_BLOCK);
+// TODO: Remove casting once fix is merged https://github.com/ChainSafe/ssz/pull/288
+export const ExcessDataGas = UintBigintType.named(32 as 8, {typeName: "ExcessDataGas"});
+export const G1Point = ByteVectorType.named(48, {typeName: "G1Point"});
+export const G2Point = ByteVectorType.named(96, {typeName: "G2Point"});
+export const BLSFieldElement = ByteVectorType.named(32, {typeName: "BLSFieldElement"});
+export const KZGCommitment = ByteVectorType.named(48, {typeName: "KZGCommitment"});
+export const KZGProof = ByteVectorType.named(48, {typeName: "KZGProof"});
+export const VersionedHash = ByteVectorType.named(32, {typeName: "VersionedHash"});
+export const Blob = ByteVectorType.named(BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB, {typeName: "Blob"});
+export const Blobs = ListCompositeType.named(Blob, MAX_BLOBS_PER_BLOCK, {typeName: "Blobs"});
+export const BlobKzgCommitments = ListCompositeType.named(KZGCommitment, MAX_BLOBS_PER_BLOCK, {
+  typeName: "BlobKzgCommitments",
+});
 
 // Constants
 
@@ -41,12 +32,12 @@ export const BlobKzgCommitments = namedListCompositeType(KZGCommitment, MAX_BLOB
 // https://github.com/ethereum/consensus-specs/blob/dev/specs/eip4844/validator.md
 
 // A polynomial in evaluation form
-export const Polynomial = namedListCompositeType(BLSFieldElement, FIELD_ELEMENTS_PER_BLOB);
+export const Polynomial = ListCompositeType.named(BLSFieldElement, FIELD_ELEMENTS_PER_BLOB, {typeName: "Polynomial"});
 
 // class BlobsAndCommitments(Container):
 //     blobs: List[Blob, MAX_BLOBS_PER_BLOCK]
 //     kzg_commitments: List[KZGCommitment, MAX_BLOBS_PER_BLOCK]
-export const BlobsAndCommitments = namedContainerType(
+export const BlobsAndCommitments = ContainerType.named(
   {
     blobs: Blobs,
     kzgCommitments: BlobKzgCommitments,
@@ -57,7 +48,7 @@ export const BlobsAndCommitments = namedContainerType(
 // class PolynomialAndCommitment(Container):
 //     polynomial: Polynomial
 //     kzg_commitment: KZGCommitment
-export const PolynomialAndCommitment = namedContainerType(
+export const PolynomialAndCommitment = ContainerType.named(
   {
     polynomial: Polynomial,
     kzgCommitment: KZGCommitment,
@@ -68,7 +59,7 @@ export const PolynomialAndCommitment = namedContainerType(
 // ReqResp types
 // =============
 
-export const BlobsSidecarsByRangeRequest = namedContainerType(
+export const BlobsSidecarsByRangeRequest = ContainerType.named(
   {
     startSlot: Slot,
     count: UintNum64,
@@ -76,37 +67,39 @@ export const BlobsSidecarsByRangeRequest = namedContainerType(
   {typeName: "BlobsSidecarsByRangeRequest", jsonCase: "eth2"}
 );
 
-export const BeaconBlockAndBlobsSidecarByRootRequest = namedListCompositeType(Root, MAX_REQUEST_BLOCKS);
+export const BeaconBlockAndBlobsSidecarByRootRequest = ListCompositeType.named(Root, MAX_REQUEST_BLOCKS, {
+  typeName: "BeaconBlockAndBlobsSidecarByRootRequest",
+});
 
 // Beacon Chain types
 // https://github.com/ethereum/consensus-specs/blob/dev/specs/eip4844/beacon-chain.md#containers
 
-export const ExecutionPayload = namedContainerType(
+export const ExecutionPayload = ContainerType.named(
   {
     ...capellaSsz.ExecutionPayload.fields,
-    excessDataGas: UintBn256, // New in EIP-4844
+    excessDataGas: ExcessDataGas, // New in EIP-4844
   },
   {typeName: "ExecutionPayloadEIP4844", jsonCase: "eth2"}
 );
 
-export const BlindedExecutionPayload = namedContainerType(
+export const BlindedExecutionPayload = ContainerType.named(
   {
     ...capellaSsz.ExecutionPayloadHeader.fields,
-    excessDataGas: UintBn256, // New in EIP-4844
+    excessDataGas: ExcessDataGas, // New in EIP-4844
   },
   {typeName: "BlindedExecutionPayloadEIP4844", jsonCase: "eth2"}
 );
 
-export const ExecutionPayloadHeader = namedContainerType(
+export const ExecutionPayloadHeader = ContainerType.named(
   {
     ...capellaSsz.ExecutionPayloadHeader.fields,
-    excessDataGas: UintBn256, // New in EIP-4844
+    excessDataGas: ExcessDataGas, // New in EIP-4844
   },
   {typeName: "ExecutionPayloadHeaderEIP4844", jsonCase: "eth2"}
 );
 
 // We have to preserve Fields ordering while changing the type of ExecutionPayload
-export const BeaconBlockBody = namedContainerType(
+export const BeaconBlockBody = ContainerType.named(
   {
     ...altairSsz.BeaconBlockBody.fields,
     executionPayload: ExecutionPayload, // Modified in EIP-4844
@@ -116,7 +109,7 @@ export const BeaconBlockBody = namedContainerType(
   {typeName: "BeaconBlockBodyEIP4844", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BeaconBlock = namedContainerType(
+export const BeaconBlock = ContainerType.named(
   {
     ...capellaSsz.BeaconBlock.fields,
     body: BeaconBlockBody, // Modified in EIP-4844
@@ -124,7 +117,7 @@ export const BeaconBlock = namedContainerType(
   {typeName: "BeaconBlockEIP4844", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBeaconBlock = namedContainerType(
+export const SignedBeaconBlock = ContainerType.named(
   {
     message: BeaconBlock, // Modified in EIP-4844
     signature: BLSSignature,
@@ -132,7 +125,7 @@ export const SignedBeaconBlock = namedContainerType(
   {typeName: "SignedBeaconBlockEIP4844", jsonCase: "eth2"}
 );
 
-export const BlobsSidecar = namedContainerType(
+export const BlobsSidecar = ContainerType.named(
   {
     beaconBlockRoot: Root,
     beaconBlockSlot: Slot,
@@ -142,7 +135,7 @@ export const BlobsSidecar = namedContainerType(
   {typeName: "BlobsSidecar", jsonCase: "eth2"}
 );
 
-export const SignedBeaconBlockAndBlobsSidecar = namedContainerType(
+export const SignedBeaconBlockAndBlobsSidecar = ContainerType.named(
   {
     beaconBlock: SignedBeaconBlock,
     blobsSidecar: BlobsSidecar,
@@ -150,7 +143,7 @@ export const SignedBeaconBlockAndBlobsSidecar = namedContainerType(
   {typeName: "SignedBeaconBlockAndBlobsSidecarEIP4844", jsonCase: "eth2"}
 );
 
-export const BlindedBeaconBlockBody = namedContainerType(
+export const BlindedBeaconBlockBody = ContainerType.named(
   {
     ...BeaconBlockBody.fields,
     executionPayloadHeader: ExecutionPayloadHeader, // Modified in EIP-4844
@@ -158,7 +151,7 @@ export const BlindedBeaconBlockBody = namedContainerType(
   {typeName: "BlindedBeaconBlockBodyEIP4844", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BlindedBeaconBlock = namedContainerType(
+export const BlindedBeaconBlock = ContainerType.named(
   {
     ...capellaSsz.BlindedBeaconBlock.fields,
     body: BlindedBeaconBlockBody, // Modified in EIP-4844
@@ -166,7 +159,7 @@ export const BlindedBeaconBlock = namedContainerType(
   {typeName: "BlindedBeaconBlockEIP4844", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBlindedBeaconBlock = namedContainerType(
+export const SignedBlindedBeaconBlock = ContainerType.named(
   {
     message: BlindedBeaconBlock, // Modified in EIP-4844
     signature: BLSSignature,
@@ -176,7 +169,7 @@ export const SignedBlindedBeaconBlock = namedContainerType(
 
 // We don't spread capella.BeaconState fields since we need to replace
 // latestExecutionPayloadHeader and we cannot keep order doing that
-export const BeaconState = namedContainerType(
+export const BeaconState = ContainerType.named(
   {
     genesisTime: GenesisTime,
     genesisValidatorsRoot: Root,
@@ -184,9 +177,9 @@ export const BeaconState = namedContainerType(
     fork: phase0Ssz.Fork,
     // History
     latestBlockHeader: phase0Ssz.BeaconBlockHeader,
-    blockRoots: capellaSsz.HistoricalBlockRoots,
-    stateRoots: capellaSsz.HistoricalStateRoots,
-    historicalRoots: namedListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
+    blockRoots: phase0Ssz.HistoricalBlockRoots,
+    stateRoots: phase0Ssz.HistoricalStateRoots,
+    historicalRoots: phase0Ssz.HistoricalRoots,
     // Eth1
     eth1Data: phase0Ssz.Eth1Data,
     eth1DataVotes: phase0Ssz.Eth1DataVotes,

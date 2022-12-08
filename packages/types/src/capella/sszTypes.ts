@@ -1,18 +1,11 @@
-import {ListCompositeType, VectorCompositeType} from "@chainsafe/ssz";
-import {
-  HISTORICAL_ROOTS_LIMIT,
-  SLOTS_PER_HISTORICAL_ROOT,
-  MAX_WITHDRAWALS_PER_PAYLOAD,
-  MAX_BLS_TO_EXECUTION_CHANGES,
-} from "@lodestar/params";
-import {namedContainerType} from "../utils/namedTypes.js";
+import {ContainerType, ListCompositeType} from "@chainsafe/ssz";
+import {MAX_WITHDRAWALS_PER_PAYLOAD, MAX_BLS_TO_EXECUTION_CHANGES} from "@lodestar/params";
 import {ssz as primitiveSsz} from "../primitive/index.js";
 import {ssz as phase0Ssz} from "../phase0/index.js";
 import {ssz as altairSsz} from "../altair/index.js";
 import {ssz as bellatrixSsz} from "../bellatrix/index.js";
 
 const {
-  UintNum64,
   Slot,
   ValidatorIndex,
   WithdrawalIndex,
@@ -21,9 +14,11 @@ const {
   BLSPubkey,
   ExecutionAddress,
   Gwei,
+  GenesisTime,
+  DepositIndex,
 } = primitiveSsz;
 
-export const Withdrawal = namedContainerType(
+export const Withdrawal = ContainerType.named(
   {
     index: WithdrawalIndex,
     validatorIndex: ValidatorIndex,
@@ -33,7 +28,7 @@ export const Withdrawal = namedContainerType(
   {typeName: "Withdrawal", jsonCase: "eth2"}
 );
 
-export const BLSToExecutionChange = namedContainerType(
+export const BLSToExecutionChange = ContainerType.named(
   {
     validatorIndex: ValidatorIndex,
     fromBlsPubkey: BLSPubkey,
@@ -42,7 +37,7 @@ export const BLSToExecutionChange = namedContainerType(
   {typeName: "BLSToExecutionChange", jsonCase: "eth2"}
 );
 
-export const SignedBLSToExecutionChange = namedContainerType(
+export const SignedBLSToExecutionChange = ContainerType.named(
   {
     message: BLSToExecutionChange,
     signature: BLSSignature,
@@ -50,8 +45,8 @@ export const SignedBLSToExecutionChange = namedContainerType(
   {typeName: "SignedBLSToExecutionChange", jsonCase: "eth2"}
 );
 
-export const Withdrawals = namedListCompositeType(Withdrawal, MAX_WITHDRAWALS_PER_PAYLOAD);
-export const ExecutionPayload = namedContainerType(
+export const Withdrawals = ListCompositeType.named(Withdrawal, MAX_WITHDRAWALS_PER_PAYLOAD, {typeName: "Withdrawals"});
+export const ExecutionPayload = ContainerType.named(
   {
     ...bellatrixSsz.ExecutionPayload.fields,
     withdrawals: Withdrawals, // New in capella
@@ -59,7 +54,7 @@ export const ExecutionPayload = namedContainerType(
   {typeName: "ExecutionPayloadCapella", jsonCase: "eth2"}
 );
 
-export const BlindedExecutionPayload = namedContainerType(
+export const BlindedExecutionPayload = ContainerType.named(
   {
     ...bellatrixSsz.ExecutionPayloadHeader.fields,
     withdrawals: Withdrawals, // New in capella
@@ -67,7 +62,7 @@ export const BlindedExecutionPayload = namedContainerType(
   {typeName: "BlindedExecutionPayloadCapella", jsonCase: "eth2"}
 );
 
-export const ExecutionPayloadHeader = namedContainerType(
+export const ExecutionPayloadHeader = ContainerType.named(
   {
     ...bellatrixSsz.ExecutionPayloadHeader.fields,
     withdrawalsRoot: Root, // New in capella
@@ -75,8 +70,10 @@ export const ExecutionPayloadHeader = namedContainerType(
   {typeName: "ExecutionPayloadHeaderCapella", jsonCase: "eth2"}
 );
 
-export const BLSToExecutionChanges = namedListCompositeType(SignedBLSToExecutionChange, MAX_BLS_TO_EXECUTION_CHANGES);
-export const BeaconBlockBody = namedContainerType(
+export const BLSToExecutionChanges = ListCompositeType.named(SignedBLSToExecutionChange, MAX_BLS_TO_EXECUTION_CHANGES, {
+  typeName: "BLSToExecutionChanges",
+});
+export const BeaconBlockBody = ContainerType.named(
   {
     ...altairSsz.BeaconBlockBody.fields,
     executionPayload: ExecutionPayload, // Modified in capella
@@ -85,7 +82,7 @@ export const BeaconBlockBody = namedContainerType(
   {typeName: "BeaconBlockBodyCapella", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BeaconBlock = namedContainerType(
+export const BeaconBlock = ContainerType.named(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -97,7 +94,7 @@ export const BeaconBlock = namedContainerType(
   {typeName: "BeaconBlockCapella", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBeaconBlock = namedContainerType(
+export const SignedBeaconBlock = ContainerType.named(
   {
     message: BeaconBlock, // Modified in capella
     signature: BLSSignature,
@@ -105,21 +102,9 @@ export const SignedBeaconBlock = namedContainerType(
   {typeName: "SignedBeaconBlockCapella", jsonCase: "eth2"}
 );
 
-// Re-declare with the new expanded type
-export const HistoricalBlockRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
-export const HistoricalStateRoots = namedVectorCompositeType(Root, SLOTS_PER_HISTORICAL_ROOT);
-
-export const HistoricalBatch = namedContainerType(
-  {
-    blockRoots: HistoricalBlockRoots,
-    stateRoots: HistoricalStateRoots,
-  },
-  {typeName: "HistoricalBatch", jsonCase: "eth2"}
-);
-
 // we don't reuse bellatrix.BeaconState fields since we need to replace some keys
 // and we cannot keep order doing that
-export const BeaconState = namedContainerType(
+export const BeaconState = ContainerType.named(
   {
     genesisTime: GenesisTime,
     genesisValidatorsRoot: Root,
@@ -127,9 +112,9 @@ export const BeaconState = namedContainerType(
     fork: phase0Ssz.Fork,
     // History
     latestBlockHeader: phase0Ssz.BeaconBlockHeader,
-    blockRoots: HistoricalBlockRoots,
-    stateRoots: HistoricalStateRoots,
-    historicalRoots: namedListCompositeType(Root, HISTORICAL_ROOTS_LIMIT),
+    blockRoots: phase0Ssz.HistoricalBlockRoots,
+    stateRoots: phase0Ssz.HistoricalStateRoots,
+    historicalRoots: phase0Ssz.HistoricalRoots,
     // Eth1
     eth1Data: phase0Ssz.Eth1Data,
     eth1DataVotes: phase0Ssz.Eth1DataVotes,
@@ -162,7 +147,7 @@ export const BeaconState = namedContainerType(
   {typeName: "BeaconStateCapella", jsonCase: "eth2"}
 );
 
-export const BlindedBeaconBlockBody = namedContainerType(
+export const BlindedBeaconBlockBody = ContainerType.named(
   {
     ...altairSsz.BeaconBlockBody.fields,
     executionPayloadHeader: BlindedExecutionPayload, // Modified in capella
@@ -171,7 +156,7 @@ export const BlindedBeaconBlockBody = namedContainerType(
   {typeName: "BlindedBeaconBlockBodyCapella", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const BlindedBeaconBlock = namedContainerType(
+export const BlindedBeaconBlock = ContainerType.named(
   {
     slot: Slot,
     proposerIndex: ValidatorIndex,
@@ -183,7 +168,7 @@ export const BlindedBeaconBlock = namedContainerType(
   {typeName: "BlindedBeaconBlockCapella", jsonCase: "eth2", cachePermanentRootStruct: true}
 );
 
-export const SignedBlindedBeaconBlock = namedContainerType(
+export const SignedBlindedBeaconBlock = ContainerType.named(
   {
     message: BlindedBeaconBlock, // Modified in capella
     signature: BLSSignature,
