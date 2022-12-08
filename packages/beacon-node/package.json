@@ -106,7 +106,7 @@
     "@chainsafe/libp2p-noise": "^10.2.0",
     "@chainsafe/persistent-merkle-tree": "^0.4.2",
     "@chainsafe/snappy-stream": "5.1.1",
-    "@chainsafe/ssz": "^0.9.3",
+    "@chainsafe/ssz": "^0.9.4",
     "@chainsafe/threads": "^1.10.0",
     "@ethersproject/abi": "^5.0.0",
     "@libp2p/bootstrap": "^2.0.0",

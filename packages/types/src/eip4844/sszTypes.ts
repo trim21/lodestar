@@ -12,8 +12,7 @@ import {ssz as capellaSsz} from "../capella/index.js";
 
 const {UintNum64, Slot, Root, BLSSignature, GenesisTime, DepositIndex} = primitiveSsz;
 
-// TODO: Remove casting once fix is merged https://github.com/ChainSafe/ssz/pull/288
-export const ExcessDataGas = UintBigintType.named(32 as 8, {typeName: "ExcessDataGas"});
+export const ExcessDataGas = UintBigintType.named(32, {typeName: "ExcessDataGas"});
 export const G1Point = ByteVectorType.named(48, {typeName: "G1Point"});
 export const G2Point = ByteVectorType.named(96, {typeName: "G2Point"});
 export const BLSFieldElement = ByteVectorType.named(32, {typeName: "BLSFieldElement"});

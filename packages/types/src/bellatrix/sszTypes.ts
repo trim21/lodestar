@@ -42,8 +42,7 @@ export const GasLimit = UintNumberType.named(8, {typeName: "GasLimit"});
 export const GasUsed = UintNumberType.named(8, {typeName: "GasUsed"});
 export const Timestamp = UintNumberType.named(8, {typeName: "Timestamp"});
 export const ExtraData = ByteListType.named(MAX_EXTRA_DATA_BYTES, {typeName: "ExtraData"});
-// TODO: Remove casting once fix is merged https://github.com/ChainSafe/ssz/pull/288
-export const BaseFeePerGas = UintBigintType.named(32 as 8, {typeName: "BaseFeePerGas"});
+export const BaseFeePerGas = UintBigintType.named(32, {typeName: "BaseFeePerGas"});
 
 /**
  * ByteList[MAX_BYTES_PER_TRANSACTION]

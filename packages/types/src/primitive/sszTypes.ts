@@ -14,9 +14,8 @@ export const Uint32 = UintNumberType.named(4, {typeName: "Uint32"});
 export const UintNum64 = UintNumberType.named(8, {typeName: "UintNum64"});
 export const UintNumInf64 = UintNumberType.named(8, {typeName: "UintNumInf64", clipInfinity: true});
 export const UintBn64 = UintBigintType.named(8, {typeName: "UintBn64"});
-// TODO: Remove casting once fix is merged https://github.com/ChainSafe/ssz/pull/288
-export const UintBn128 = UintBigintType.named(16 as 8, {typeName: "UintBn128"});
-export const UintBn256 = UintBigintType.named(32 as 8, {typeName: "UintBn256"});
+export const UintBn128 = UintBigintType.named(16, {typeName: "UintBn128"});
+export const UintBn256 = UintBigintType.named(32, {typeName: "UintBn256"});
 
 // Custom types, defined for type hinting and readability
 
