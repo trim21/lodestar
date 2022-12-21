@@ -70,6 +70,7 @@ nav:
       - Install from source: install/source.md
       - Install from NPM: install/npm.md
       - Install with Docker: install/docker.md
+      - Comprehensive Setup Guide: install/fullsetupguide.md
   - Using Lodestar:
       - Beacon management: usage/beacon-management.md
       - Local testnet: usage/local.md
