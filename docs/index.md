@@ -6,7 +6,7 @@
 
 ### Getting started
 
-- Follow the installation method for [source install](install/source.md), [NPM install](install/npm.md), or [Docker install](install/docker.md) to install Lodestar. Or use our [comprehensive setup guide](https://hackmd.io/@philknows/rk5cDvKmK).
+- Follow the installation method for [source install](install/source.md), [NPM install](install/npm.md), or [Docker install](install/docker.md) to install Lodestar. Or use our [comprehensive setup guide](install/fullsetupguide.md).
 - Use [Lodestar libraries](libraries) in your next Ethereum Typescript project.
 - Run a beacon node on [mainnet or a public testnet](usage/beacon-management.md).
 - Utilize the whole stack by [starting a local testnet](usage/local).
@@ -20,12 +20,12 @@
 
 Hardware specifications minimum / recommended, to run the Lodestar client.
 
-|           | Minimum                          | Recommended                       |
-| --------- | -------------------------------- | --------------------------------- |
-| Processor | Intel Core i5–760 or AMD FX-8100 | Intel Core i7–4770 or AMD FX-8310 |
-| Memory    | 4GB RAM                          | 8GB RAM                           |
-| Storage   | 20GB available space SSD         | 100GB available space SSD         |
-| Internet  | Broadband connection             | Broadband connection              |
+|           | Minimum                                          | Recommended                                             |
+| --------- | ------------------------------------------------ | ------------------------------------------------------- |
+| Processor | Intel Core i5–760 or AMD FX-8100                 | Intel Core i7–4770 or AMD FX-8310                       |
+| Memory    | 8GB RAM                                          | 16GB+ RAM                                               |
+| Storage   | 20GB available space SSD (Consensus Client Only) | 2TB+ available space SSD (Consensus + Execution Client) |
+| Internet  | 5-10mbps (Synced)                                | 50+mbps (Syncing)   
 
 ## About these docs
 
