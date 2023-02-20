@@ -134,6 +134,7 @@ export const DOMAIN_SYNC_COMMITTEE = Uint8Array.from([7, 0, 0, 0]);
 export const DOMAIN_SYNC_COMMITTEE_SELECTION_PROOF = Uint8Array.from([8, 0, 0, 0]);
 export const DOMAIN_CONTRIBUTION_AND_PROOF = Uint8Array.from([9, 0, 0, 0]);
 export const DOMAIN_BLS_TO_EXECUTION_CHANGE = Uint8Array.from([10, 0, 0, 0]);
+export const DOMAIN_BLOB_SIDECAR = Uint8Array.from([11, 0, 0, 0]);
 
 // Application specific domains
 
@@ -180,7 +181,8 @@ export const SYNC_COMMITTEE_SUBNET_COUNT = 4;
 export const SYNC_COMMITTEE_SUBNET_SIZE = Math.floor(SYNC_COMMITTEE_SIZE / SYNC_COMMITTEE_SUBNET_COUNT);
 
 export const MAX_REQUEST_BLOCKS = 2 ** 10; // 1024
-
+export const MAX_REQUEST_BLOCKS_DENEB = 2 ** 7; // 128
+export const MAX_REQUEST_BLOB_SIDECARS = 2 ** 7; // 128
 // Lightclient pre-computed
 /**
  * ```ts
@@ -234,5 +236,5 @@ export const INTERVALS_PER_SLOT = 3;
 
 // EIP-4844: Crypto const
 export const BYTES_PER_FIELD_ELEMENT = 32;
-export const BLOB_TX_TYPE = 0x05;
+export const BLOB_TX_TYPE = 0x03;
 export const VERSIONED_HASH_VERSION_KZG = 0x01;

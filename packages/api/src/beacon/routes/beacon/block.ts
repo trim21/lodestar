@@ -150,7 +150,7 @@ export type Api = {
    * @param requestBody The `SignedBeaconBlock` object composed of `BeaconBlock` object (produced by beacon node) and validator signature.
    * @returns any The block was validated successfully and has been broadcast. It has also been integrated into the beacon node's database.
    */
-  publishBlock(block: allForks.SignedBeaconBlock): Promise<
+  publishBlock(blockOrContents: allForks.SignedBeaconBlock | allForks.SignedBlockContents): Promise<
     ApiClientResponse<
       {
         [HttpStatusCode.OK]: void;
@@ -163,7 +163,9 @@ export type Api = {
    * Publish a signed blinded block by submitting it to the mev relay and patching in the block
    * transactions beacon node gets in response.
    */
-  publishBlindedBlock(block: allForks.SignedBlindedBeaconBlock): Promise<
+  publishBlindedBlock(
+    blindedBlockOrContents: allForks.SignedBlindedBeaconBlock | allForks.SignedBlindedBlockContents
+  ): Promise<
     ApiClientResponse<
       {
         [HttpStatusCode.OK]: void;
@@ -173,14 +175,14 @@ export type Api = {
     >
   >;
   /**
-   * Get block BlobsSidecar
-   * Retrieves BlobsSidecar included in requested block.
+   * Get block BlobSidecar
+   * Retrieves BlobSidecar included in requested block.
    * @param blockId Block identifier.
    * Can be one of: "head" (canonical head in node's view), "genesis", "finalized", \<slot\>, \<hex encoded blockRoot with 0x prefix\>.
    */
-  getBlobsSidecar(blockId: BlockId): Promise<
+  getBlobSidecars(blockId: BlockId): Promise<
     ApiClientResponse<{
-      [HttpStatusCode.OK]: {executionOptimistic: ExecutionOptimistic; data: deneb.BlobsSidecar};
+      [HttpStatusCode.OK]: {executionOptimistic: ExecutionOptimistic; data: deneb.BlobSidecars};
     }>
   >;
 };
@@ -197,7 +199,7 @@ export const routesData: RoutesData<Api> = {
   getBlockRoot: {url: "/eth/v1/beacon/blocks/{block_id}/root", method: "GET"},
   publishBlock: {url: "/eth/v1/beacon/blocks", method: "POST"},
   publishBlindedBlock: {url: "/eth/v1/beacon/blinded_blocks", method: "POST"},
-  getBlobsSidecar: {url: "/eth/v1/beacon/blobs_sidecars/{block_id}", method: "GET"},
+  getBlobSidecars: {url: "/eth/v1/beacon/blob_sidecars/{block_id}", method: "GET"},
 };
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -213,7 +215,7 @@ export type ReqTypes = {
   getBlockRoot: BlockIdOnlyReq;
   publishBlock: {body: unknown};
   publishBlindedBlock: {body: unknown};
-  getBlobsSidecar: BlockIdOnlyReq;
+  getBlobSidecars: BlockIdOnlyReq;
 };
 
 export function getReqSerializers(config: ChainForkConfig): ReqSerializers<Api, ReqTypes> {
@@ -226,21 +228,50 @@ export function getReqSerializers(config: ChainForkConfig): ReqSerializers<Api, 
   // Compute block type from JSON payload. See https://github.com/ethereum/eth2.0-APIs/pull/142
   const getSignedBeaconBlockType = (data: allForks.SignedBeaconBlock): allForks.AllForksSSZTypes["SignedBeaconBlock"] =>
     config.getForkTypes(data.message.slot).SignedBeaconBlock;
+  const getSignedBlockContentsType = (
+    data: allForks.SignedBeaconBlock
+  ): allForks.AllForksBlobsSSZTypes["SignedBlockContents"] =>
+    config.getBlobsForkTypes(data.message.slot).SignedBlockContents;
 
-  const AllForksSignedBeaconBlock: TypeJson<allForks.SignedBeaconBlock> = {
-    toJson: (data) => getSignedBeaconBlockType(data).toJson(data),
-    fromJson: (data) => getSignedBeaconBlockType(data as unknown as allForks.SignedBeaconBlock).fromJson(data),
+  const AllForksSignedBlockOrContents: TypeJson<allForks.SignedBeaconBlock | allForks.SignedBlockContents> = {
+    toJson: (data) =>
+      (data as allForks.SignedBlockContents).signedBlock === undefined
+        ? getSignedBeaconBlockType(data as allForks.SignedBeaconBlock).toJson(data as allForks.SignedBeaconBlock)
+        : getSignedBlockContentsType((data as allForks.SignedBlockContents).signedBlock).toJson(
+            data as allForks.SignedBlockContents
+          ),
+    fromJson: (data) =>
+      (data as {signed_block: unknown}).signed_block === undefined
+        ? getSignedBeaconBlockType(data as allForks.SignedBeaconBlock).fromJson(data)
+        : getSignedBlockContentsType((data as {signed_block: allForks.SignedBeaconBlock}).signed_block).fromJson(data),
   };
 
   const getSignedBlindedBeaconBlockType = (
     data: allForks.SignedBlindedBeaconBlock
   ): allForks.AllForksBlindedSSZTypes["SignedBeaconBlock"] =>
     config.getBlindedForkTypes(data.message.slot).SignedBeaconBlock;
+  const getSignedBlindedBlockContentsType = (
+    data: allForks.SignedBlindedBeaconBlock
+  ): allForks.AllForksBlobsSSZTypes["SignedBlindedBlockContents"] =>
+    config.getBlobsForkTypes(data.message.slot).SignedBlindedBlockContents;
 
-  const AllForksSignedBlindedBeaconBlock: TypeJson<allForks.SignedBlindedBeaconBlock> = {
-    toJson: (data) => getSignedBlindedBeaconBlockType(data).toJson(data),
+  const AllForksSignedBlindedBlockOrContents: TypeJson<
+    allForks.SignedBlindedBeaconBlock | allForks.SignedBlindedBlockContents
+  > = {
+    toJson: (data) =>
+      (data as allForks.SignedBlindedBlockContents).signedBlindedBlock === undefined
+        ? getSignedBlindedBeaconBlockType(data as allForks.SignedBlindedBeaconBlock).toJson(
+            data as allForks.SignedBlindedBeaconBlock
+          )
+        : getSignedBlindedBlockContentsType((data as allForks.SignedBlindedBlockContents).signedBlindedBlock).toJson(
+            data as allForks.SignedBlindedBlockContents
+          ),
     fromJson: (data) =>
-      getSignedBlindedBeaconBlockType(data as unknown as allForks.SignedBlindedBeaconBlock).fromJson(data),
+      (data as {signed_blinded_block: unknown}).signed_blinded_block === undefined
+        ? getSignedBlindedBeaconBlockType(data as unknown as allForks.SignedBlindedBeaconBlock).fromJson(data)
+        : getSignedBlindedBlockContentsType(
+            (data as {signed_blinded_block: allForks.SignedBlindedBeaconBlock}).signed_blinded_block
+          ).fromJson(data),
   };
 
   return {
@@ -254,9 +285,9 @@ export function getReqSerializers(config: ChainForkConfig): ReqSerializers<Api, 
       schema: {query: {slot: Schema.Uint, parent_root: Schema.String}},
     },
     getBlockRoot: blockIdOnlyReq,
-    publishBlock: reqOnlyBody(AllForksSignedBeaconBlock, Schema.Object),
-    publishBlindedBlock: reqOnlyBody(AllForksSignedBlindedBeaconBlock, Schema.Object),
-    getBlobsSidecar: blockIdOnlyReq,
+    publishBlock: reqOnlyBody(AllForksSignedBlockOrContents, Schema.Object),
+    publishBlindedBlock: reqOnlyBody(AllForksSignedBlindedBlockOrContents, Schema.Object),
+    getBlobSidecars: blockIdOnlyReq,
   };
 }
 
@@ -278,6 +309,6 @@ export function getReturnTypes(): ReturnTypes<Api> {
     getBlockHeader: ContainerDataExecutionOptimistic(BeaconHeaderResType),
     getBlockHeaders: ContainerDataExecutionOptimistic(ArrayOf(BeaconHeaderResType)),
     getBlockRoot: ContainerDataExecutionOptimistic(RootContainer),
-    getBlobsSidecar: ContainerDataExecutionOptimistic(ssz.deneb.BlobsSidecar),
+    getBlobSidecars: ContainerDataExecutionOptimistic(ssz.deneb.BlobSidecars),
   };
 }

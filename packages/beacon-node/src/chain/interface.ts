@@ -92,7 +92,8 @@ export interface IBeaconChain {
 
   readonly beaconProposerCache: BeaconProposerCache;
   readonly checkpointBalancesCache: CheckpointBalancesCache;
-  readonly producedBlobsSidecarCache: Map<RootHex, deneb.BlobsSidecar>;
+  readonly producedBlobSidecarsCache: Map<RootHex, {blobSidecars: deneb.BlobSidecars; slot: Slot}>;
+  readonly producedBlindedBlobSidecarsCache: Map<RootHex, {blobSidecars: deneb.BlindedBlobSidecars; slot: Slot}>;
   readonly opts: IChainOptions;
 
   /** Stop beacon chain processing */
@@ -116,7 +117,7 @@ export interface IBeaconChain {
    */
   getCanonicalBlockAtSlot(slot: Slot): Promise<allForks.SignedBeaconBlock | null>;
 
-  getBlobsSidecar(beaconBlock: deneb.BeaconBlock): deneb.BlobsSidecar;
+  getBlobSidecars(beaconBlock: deneb.BeaconBlock): deneb.BlobSidecars;
 
   produceBlock(blockAttributes: BlockAttributes): Promise<{block: allForks.BeaconBlock; blockValue: Wei}>;
   produceBlindedBlock(blockAttributes: BlockAttributes): Promise<{block: allForks.BlindedBeaconBlock; blockValue: Wei}>;

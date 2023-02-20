@@ -68,6 +68,11 @@ export type FullOrBlindedBeaconBlockBody = BeaconBlockBody | BlindedBeaconBlockB
 export type FullOrBlindedBeaconBlock = BeaconBlock | BlindedBeaconBlock;
 export type FullOrBlindedSignedBeaconBlock = SignedBeaconBlock | SignedBlindedBeaconBlock;
 
+export type FullOrBlindedBlobSidecar = deneb.BlobSidecar | deneb.BlindedBlobSidecar;
+export type FullOrBlindedSignedBlobSidecar = deneb.SignedBlobSidecar | deneb.SignedBlindedBlobSidecar;
+
+export type FullOrBlindedBlobSidecars = deneb.BlobSidecars | deneb.BlindedBlobSidecars;
+
 export type BuilderBid = bellatrix.BuilderBid | capella.BuilderBid | deneb.BuilderBid;
 export type SignedBuilderBid = bellatrix.SignedBuilderBid | capella.SignedBuilderBid | deneb.SignedBuilderBid;
 
@@ -87,9 +92,14 @@ export type LightClientOptimisticUpdate =
   | deneb.LightClientOptimisticUpdate;
 export type LightClientStore = altair.LightClientStore | capella.LightClientStore | deneb.LightClientStore;
 
-export type SignedBeaconBlockAndBlobsSidecar = deneb.SignedBeaconBlockAndBlobsSidecar;
-
 export type SSEPayloadAttributes = bellatrix.SSEPayloadAttributes | capella.SSEPayloadAttributes;
+
+export type SignedBeaconBlockAndBlobSidecars = deneb.SignedBeaconBlockAndBlobSidecars;
+export type BlockContents = deneb.BlockContents;
+export type BlindedBlockContents = deneb.BlindedBlockContents;
+export type SignedBlockContents = deneb.SignedBlockContents;
+export type SignedBlindedBlockContents = deneb.SignedBlindedBlockContents;
+
 /**
  * Types known to change between forks
  */
@@ -104,7 +114,7 @@ export type AllForksTypes = {
   LightClientHeader: LightClientHeader;
   BuilderBid: BuilderBid;
   SignedBuilderBid: SignedBuilderBid;
-  SignedBeaconBlockAndBlobsSidecar: SignedBeaconBlockAndBlobsSidecar;
+  SignedBeaconBlockAndBlobSidecars: SignedBeaconBlockAndBlobSidecars;
 };
 
 export type AllForksBlindedTypes = {
@@ -277,5 +287,11 @@ export type AllForksLightClientSSZTypes = {
 };
 
 export type AllForksBlobsSSZTypes = {
-  SignedBeaconBlockAndBlobsSidecar: AllForksTypeOf<typeof denebSsz.SignedBeaconBlockAndBlobsSidecar>;
+  SignedBeaconBlockAndBlobSidecars: AllForksTypeOf<typeof denebSsz.SignedBeaconBlockAndBlobSidecars>;
+  BlobSidecar: AllForksTypeOf<typeof denebSsz.BlobSidecar>;
+  BlindedBlobSidecar: AllForksTypeOf<typeof denebSsz.BlindedBlobSidecar>;
+  BlockContents: AllForksTypeOf<typeof denebSsz.BlockContents>;
+  BlindedBlockContents: AllForksTypeOf<typeof denebSsz.BlindedBlockContents>;
+  SignedBlockContents: AllForksTypeOf<typeof denebSsz.SignedBlockContents>;
+  SignedBlindedBlockContents: AllForksTypeOf<typeof denebSsz.SignedBlindedBlockContents>;
 };
