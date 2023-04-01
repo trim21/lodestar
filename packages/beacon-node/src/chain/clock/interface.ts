@@ -33,4 +33,5 @@ export type BeaconClock = {
    * Return second from a slot to either toSec or now.
    */
   secFromSlot(slot: Slot, toSec?: number): number;
+  stop(): void;
 };

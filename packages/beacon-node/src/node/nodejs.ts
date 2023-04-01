@@ -323,6 +323,7 @@ export class BeaconNode {
       await this.db.stop();
       if (this.controller) this.controller.abort();
       this.status = BeaconNodeStatus.closed;
+      console.log("Beacon node closed!");
     }
   }
 }

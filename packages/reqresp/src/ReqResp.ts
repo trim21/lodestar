@@ -120,6 +120,7 @@ export class ReqResp {
   }
 
   async stop(): Promise<void> {
+    this.rateLimiter.stop();
     this.controller.abort();
   }
 

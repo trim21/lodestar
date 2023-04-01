@@ -131,6 +131,10 @@ export class LocalClock implements BeaconClock {
     return toSec - (this.genesisTime + slot * this.config.SECONDS_PER_SLOT);
   }
 
+  stop(): void {
+    clearTimeout(this.timeoutId);
+  }
+
   private onNextSlot = (slot?: Slot): void => {
     const clockSlot = slot ?? getCurrentSlot(this.config, this.genesisTime);
     // process multiple clock slots in the case the main thread has been saturated for > SECONDS_PER_SLOT

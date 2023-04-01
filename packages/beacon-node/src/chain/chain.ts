@@ -275,10 +275,12 @@ export class BeaconChain implements IBeaconChain {
   }
 
   async close(): Promise<void> {
-    this.abortController.abort();
+    this.clock.stop();
+    this.blockProcessor.stop();
     this.stateCache.clear();
     this.checkpointStateCache.clear();
     await this.bls.close();
+    this.abortController.abort();
   }
 
   validatorSeenAtEpoch(index: ValidatorIndex, epoch: Epoch): boolean {

@@ -33,6 +33,10 @@ export class BlockProcessor {
   async processBlocksJob(job: BlockInput[], opts: ImportBlockOpts = {}): Promise<void> {
     await this.jobQueue.push(job, opts);
   }
+
+  stop(): void {
+    this.jobQueue.dropAllJobs();
+  }
 }
 
 /**
