@@ -52,6 +52,7 @@ export async function createNodejsLibp2p(options: Libp2pOptions): Promise<Libp2p
     transports: [
       tcp({
         maxConnections: options.maxConnections,
+        backlog: 10,
         closeServerOnMaxConnections: {
           closeAbove: options.maxConnections ?? Infinity,
           listenBelow: options.maxConnections ?? Infinity,

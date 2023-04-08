@@ -2750,10 +2750,9 @@
     uint8arraylist "^2.0.0"
     uint8arrays "^4.0.2"
 
-"@libp2p/tcp@6.1.0":
+"@libp2p/tcp@github://tuyennhv/js-libp2p-tcp.git#test_socket_fix_4":
   version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@libp2p/tcp/-/tcp-6.1.0.tgz#f4da4eb5974cf91b25c8395994d4c68a50ebc73a"
-  integrity sha512-eBymh9uMoj+fi88evxY2eUGny8lAVo2LE4SqjuCuqGgMbcFF3AL30eIVMyDZCmg41NAFShNtbQ9zBMqhcGqDAA==
+  resolved "https://codeload.github.com/tuyennhv/js-libp2p-tcp/tar.gz/a8f5c63eb9585966e2af0c9c107f4cfe3b7eca47"
   dependencies:
     "@libp2p/interface-connection" "^3.0.2"
     "@libp2p/interface-metrics" "^4.0.0"
