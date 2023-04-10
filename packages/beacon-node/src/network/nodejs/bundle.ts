@@ -52,7 +52,10 @@ export async function createNodejsLibp2p(options: Libp2pOptions): Promise<Libp2p
     transports: [
       tcp({
         maxConnections: options.maxConnections,
-        backlog: 10,
+        // socket option: the maximum length of the queue of pending connections
+        // https://nodejs.org/dist/latest-v18.x/docs/api/net.html#serverlisten
+        // this is 10% of our target peers
+        backlog: 5,
         closeServerOnMaxConnections: {
           closeAbove: options.maxConnections ?? Infinity,
           listenBelow: options.maxConnections ?? Infinity,
@@ -85,6 +88,9 @@ export async function createNodejsLibp2p(options: Libp2pOptions): Promise<Libp2p
       // If ConnectionManager.size < minConnections, it won't prune peers in _maybeDisconnectOne(). If autoDial is
       // off it doesn't have any effect in behaviour.
       minConnections: options.minConnections,
+      // the maximum number of pending connections libp2p will accept before it starts rejecting incoming connections.
+      // make it the same to backlog option above
+      maxIncomingPendingConnections: 5,
     },
     datastore: options.datastore,
     nat: {
