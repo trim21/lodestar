@@ -214,6 +214,7 @@ export class BeaconNode {
     await chain.loadFromDisk();
 
     chain.prunePastInvalidSszObjects();
+    setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
 
     // Network needs to be initialized before the sync
     // See https://github.com/ChainSafe/lodestar/issues/4543
