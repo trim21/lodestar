@@ -213,8 +213,10 @@ export class BeaconNode {
     // Load persisted data from disk to in-memory caches
     await chain.loadFromDisk();
 
-    chain.prunePastInvalidSszObjects();
-    setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
+    if (opts.chain.persistInvalidSszObjectsRetention !== undefined) {
+      chain.prunePastInvalidSszObjects();
+      setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
+    }
 
     // Network needs to be initialized before the sync
     // See https://github.com/ChainSafe/lodestar/issues/4543
