@@ -14,6 +14,7 @@ export type IChainOptions = BlockProcessOpts &
     blsVerifyAllMultiThread?: boolean;
     persistInvalidSszObjects?: boolean;
     persistInvalidSszObjectsDir?: string;
+    persistInvalidSszObjectsRetention?: number;
     skipCreateStateCacheIfAvailable?: boolean;
     suggestedFeeRecipient: string;
     maxSkipSlots?: number;

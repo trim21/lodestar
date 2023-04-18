@@ -115,7 +115,12 @@ export async function beaconHandlerInit(args: BeaconArgs & GlobalArgs) {
   const beaconPaths = getBeaconPaths(args, network);
   // TODO: Rename db.name to db.path or db.location
   beaconNodeOptions.set({db: {name: beaconPaths.dbDir}});
-  beaconNodeOptions.set({chain: {persistInvalidSszObjectsDir: beaconPaths.persistInvalidSszObjectsDir}});
+  beaconNodeOptions.set({
+    chain: {
+      persistInvalidSszObjectsDir: beaconPaths.persistInvalidSszObjectsDir,
+      persistInvalidSszObjectsRetention: args.persistInvalidSszObjectsRetention,
+    },
+  });
   // Add metrics metadata to show versioning + network info in Prometheus + Grafana
   beaconNodeOptions.set({metrics: {metadata: {version, commit, network}}});
   // Add detailed version string for API node/version endpoint

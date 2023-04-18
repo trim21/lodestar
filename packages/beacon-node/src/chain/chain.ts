@@ -1,4 +1,5 @@
 import path from "node:path";
+import fs from "node:fs";
 import {
   BeaconStateAllForks,
   CachedBeaconStateAllForks,
@@ -503,6 +504,29 @@ export class BeaconChain implements IBeaconChain {
     if (this.opts.persistInvalidSszObjects) {
       void this.persistInvalidSszObject(view.type.typeName, view.serialize(), view.hashTreeRoot(), suffix);
     }
+  }
+
+  prunePastInvalidSszObjects(): void {
+    if (this.opts.persistInvalidSszObjectsRetention === undefined) {
+      return;
+    }
+
+    const retentionDays = this.opts.persistInvalidSszObjectsRetention;
+    const DAYS_TO_MS = 24 * 60 * 60 * 1000;
+    const today = new Date();
+    const basePath = this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects";
+
+    const datesPastRetention = (date: string): boolean =>
+      today.getTime() - retentionDays * DAYS_TO_MS - new Date(date).getTime() < 0;
+    fs.readdir(basePath, (err, list) => {
+      if (err === undefined) {
+        for (const date of list.filter(datesPastRetention)) {
+          const dirpath = path.join(basePath, date);
+          fs.rmdirSync(dirpath);
+          this.logger.debug("Removed invalid ssz object", {path: dirpath});
+        }
+      }
+    });
   }
 
   /**
