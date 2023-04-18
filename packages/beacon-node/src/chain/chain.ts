@@ -509,7 +509,7 @@ export class BeaconChain implements IBeaconChain {
   prunePastInvalidSszObjects(): void {
     this.logger.debug("Prunning invalid ssz objects", {
       invalidObjectsDir: this.opts.persistInvalidSszObjectsDir,
-      invalidObjectsRetention: this.opts.persistInvalidSszObjectsRetention,
+      invalidObjectsRetentionDays: this.opts.persistInvalidSszObjectsRetention,
     });
 
     if (this.opts.persistInvalidSszObjectsRetention === undefined) {
