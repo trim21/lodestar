@@ -213,7 +213,7 @@ export class BeaconNode {
     // Load persisted data from disk to in-memory caches
     await chain.loadFromDisk();
 
-    if (opts.chain.persistInvalidSszObjectsRetention !== undefined) {
+    if (opts.chain.persistInvalidSszObjects && opts.chain.persistInvalidSszObjectsRetention !== 0) {
       chain.prunePastInvalidSszObjects();
       setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
     }

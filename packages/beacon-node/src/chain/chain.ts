@@ -507,19 +507,14 @@ export class BeaconChain implements IBeaconChain {
   }
 
   prunePastInvalidSszObjects(): void {
-    this.logger.debug("Prunning invalid ssz objects", {
-      invalidObjectsDir: this.opts.persistInvalidSszObjectsDir,
-      invalidObjectsRetentionDays: this.opts.persistInvalidSszObjectsRetention,
-    });
+    const invalidObjectsDir = this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects";
+    const invalidObjectsRetentionDays = this.opts.persistInvalidSszObjectsRetention ?? 7;
+    this.logger.debug("Prunning invalid ssz objects", {invalidObjectsDir, invalidObjectsRetentionDays});
 
-    if (this.opts.persistInvalidSszObjectsRetention === undefined) {
-      return;
-    }
-
-    const retentionDays = this.opts.persistInvalidSszObjectsRetention + 1;
+    const retentionDays = invalidObjectsRetentionDays + 1;
     const DAYS_TO_MS = 24 * 60 * 60 * 1000;
     const today = new Date();
-    const basePath = this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects";
+    const basePath = invalidObjectsDir;
 
     const datesPastRetention = (date: string): boolean =>
       new Date(date).getTime() < today.getTime() - retentionDays * DAYS_TO_MS;
