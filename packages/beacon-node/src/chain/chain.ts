@@ -520,13 +520,13 @@ export class BeaconChain implements IBeaconChain {
     const datesPastRetention = (date: string): boolean => new Date(date).getTime() < retentionDateInMS;
     fs.readdir(basePath, (err, list) => {
       if (err) {
-        this.logger.error("Unable to delete invalid ssz objects", {err: err.message});
+        this.logger.debug("Unable to delete invalid ssz objects", {err: err.message});
       } else {
         for (const date of list.filter(datesPastRetention)) {
           const dirpath = path.join(basePath, date);
           fs.rm(dirpath, {recursive: true}, (err) => {
             if (err) {
-              this.logger.error("Failed to remove invalid ssz object", {dir: dirpath, err: err.message});
+              this.logger.debug("Failed to remove invalid ssz object", {dir: dirpath, err: err.message});
             } else {
               this.logger.debug("Removed invalid ssz object", {path: dirpath});
             }
