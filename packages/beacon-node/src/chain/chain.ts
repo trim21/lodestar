@@ -507,7 +507,7 @@ export class BeaconChain implements IBeaconChain {
   }
 
   prunePastInvalidSszObjects(): void {
-    const invalidObjectsDir = this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects";
+    const invalidObjectsDir = this.persistInvalidSszObjectsDir;
     const invalidObjectsRetentionDays = this.opts.persistInvalidSszObjectsRetention ?? 7;
     this.logger.debug("Pruning invalid ssz objects", {invalidObjectsDir, invalidObjectsRetentionDays});
 
@@ -640,7 +640,7 @@ export class BeaconChain implements IBeaconChain {
     const dateStr = now.toISOString().split("T")[0];
 
     // by default store to lodestar_archive of current dir
-    const dirpath = path.join(this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects", dateStr);
+    const dirpath = path.join(this.persistInvalidSszObjectsDir, dateStr);
     const filepath = path.join(dirpath, `${typeName}_${toHex(root)}.ssz`);
 
     await ensureDir(dirpath);
@@ -650,6 +650,10 @@ export class BeaconChain implements IBeaconChain {
     await writeIfNotExist(filepath, bytes);
 
     this.logger.debug("Persisted invalid ssz object", {id: suffix, filepath});
+  }
+
+  private get persistInvalidSszObjectsDir(): string {
+    return this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects";
   }
 
   private onScrapeMetrics(): void {
