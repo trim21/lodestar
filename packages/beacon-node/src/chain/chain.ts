@@ -509,17 +509,19 @@ export class BeaconChain implements IBeaconChain {
   prunePastInvalidSszObjects(): void {
     const invalidObjectsDir = this.opts.persistInvalidSszObjectsDir ?? "invalid_ssz_objects";
     const invalidObjectsRetentionDays = this.opts.persistInvalidSszObjectsRetention ?? 7;
-    this.logger.debug("Prunning invalid ssz objects", {invalidObjectsDir, invalidObjectsRetentionDays});
+    this.logger.debug("Pruning invalid ssz objects", {invalidObjectsDir, invalidObjectsRetentionDays});
 
     const retentionDays = invalidObjectsRetentionDays + 1;
     const DAYS_TO_MS = 24 * 60 * 60 * 1000;
     const today = new Date();
+    const retentionDateInMS = today.getTime() - retentionDays * DAYS_TO_MS;
     const basePath = invalidObjectsDir;
 
-    const datesPastRetention = (date: string): boolean =>
-      new Date(date).getTime() < today.getTime() - retentionDays * DAYS_TO_MS;
+    const datesPastRetention = (date: string): boolean => new Date(date).getTime() < retentionDateInMS;
     fs.readdir(basePath, (err, list) => {
-      if (!err) {
+      if (err) {
+        this.logger.error("Unable to delete invalid ssz objects", {err: err.message});
+      } else {
         for (const date of list.filter(datesPastRetention)) {
           const dirpath = path.join(basePath, date);
           fs.rm(dirpath, {recursive: true}, (err) => {
@@ -530,8 +532,6 @@ export class BeaconChain implements IBeaconChain {
             }
           });
         }
-      } else {
-        this.logger.error("Unable to delete invalid ssz objects", {err: err.message});
       }
     });
   }
