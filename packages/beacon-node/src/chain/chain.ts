@@ -517,12 +517,11 @@ export class BeaconChain implements IBeaconChain {
     const retentionDateInMS = today.getTime() - retentionDays * DAYS_TO_MS;
     const basePath = invalidObjectsDir;
 
-    const datesPastRetention = (date: string): boolean => new Date(date).getTime() < retentionDateInMS;
     fs.readdir(basePath, (err, list) => {
       if (err) {
         this.logger.debug("Unable to delete invalid ssz objects", {err: err.message});
       } else {
-        for (const date of list.filter(datesPastRetention)) {
+        for (const date of list.filter((date) => new Date(date).getTime() < retentionDateInMS)) {
           const dirpath = path.join(basePath, date);
           fs.rm(dirpath, {recursive: true}, (err) => {
             if (err) {
