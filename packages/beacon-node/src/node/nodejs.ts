@@ -214,7 +214,7 @@ export class BeaconNode {
     await chain.loadFromDisk();
 
     if (opts.chain.persistInvalidSszObjects && opts.chain.persistInvalidSszObjectsRetention !== 0) {
-      chain.prunePastInvalidSszObjects();
+      void chain.prunePastInvalidSszObjects();
       setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
     }
 

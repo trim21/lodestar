@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import {promisify} from "node:util";
 import {
   BeaconStateAllForks,
   CachedBeaconStateAllForks,
@@ -506,7 +507,7 @@ export class BeaconChain implements IBeaconChain {
     }
   }
 
-  prunePastInvalidSszObjects(): void {
+  async prunePastInvalidSszObjects(): Promise<void> {
     const invalidObjectsDir = this.persistInvalidSszObjectsDir;
     const invalidObjectsRetentionDays = this.opts.persistInvalidSszObjectsRetention ?? 7;
     this.logger.debug("Pruning invalid ssz objects", {invalidObjectsDir, invalidObjectsRetentionDays});
@@ -517,22 +518,19 @@ export class BeaconChain implements IBeaconChain {
     const retentionDateInMS = today.getTime() - retentionDays * DAYS_TO_MS;
     const basePath = invalidObjectsDir;
 
-    fs.readdir(basePath, (err, list) => {
-      if (err) {
-        this.logger.debug("Unable to delete invalid ssz objects", {err: err.message});
-      } else {
-        for (const date of list.filter((date) => new Date(date).getTime() < retentionDateInMS)) {
-          const dirpath = path.join(basePath, date);
-          fs.rm(dirpath, {recursive: true}, (err) => {
-            if (err) {
-              this.logger.debug("Failed to remove invalid ssz object", {dir: dirpath, err: err.message});
-            } else {
-              this.logger.debug("Removed invalid ssz object", {path: dirpath});
-            }
-          });
-        }
+    const rm = promisify(fs.rm);
+
+    try {
+      const list = await promisify(fs.readdir)(basePath);
+      const filteredList = list.filter((date) => new Date(date).getTime() < retentionDateInMS);
+      for (const date of filteredList) {
+        const dirpath = path.join(basePath, date);
+        void rm(dirpath, {recursive: true});
       }
-    });
+      this.logger.debug("Removed invalid ssz objects", {deletedCount: filteredList.length});
+    } catch (err) {
+      this.logger.debug("Unable to delete invalid ssz objects", {err: (err as Error).message});
+    }
   }
 
   /**
