@@ -522,7 +522,7 @@ export class BeaconChain implements IBeaconChain {
       const filteredList = list.filter((date) => new Date(date).getTime() < retentionDateInMS);
       for (const date of filteredList) {
         const dirpath = path.join(basePath, date);
-        void fs.rm(dirpath, {recursive: true});
+        await fs.rm(dirpath, {recursive: true});
       }
       this.logger.debug("Removed invalid ssz objects", {deletedCount: filteredList.length});
     } catch (err) {
