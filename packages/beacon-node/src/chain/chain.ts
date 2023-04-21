@@ -1,6 +1,5 @@
 import path from "node:path";
-import fs from "node:fs";
-import {promisify} from "node:util";
+import fs from "node:fs/promises";
 import {
   BeaconStateAllForks,
   CachedBeaconStateAllForks,
@@ -518,14 +517,12 @@ export class BeaconChain implements IBeaconChain {
     const retentionDateInMS = today.getTime() - retentionDays * DAYS_TO_MS;
     const basePath = invalidObjectsDir;
 
-    const rm = promisify(fs.rm);
-
     try {
-      const list = await promisify(fs.readdir)(basePath);
+      const list = await fs.readdir(basePath);
       const filteredList = list.filter((date) => new Date(date).getTime() < retentionDateInMS);
       for (const date of filteredList) {
         const dirpath = path.join(basePath, date);
-        void rm(dirpath, {recursive: true});
+        void fs.rm(dirpath, {recursive: true});
       }
       this.logger.debug("Removed invalid ssz objects", {deletedCount: filteredList.length});
     } catch (err) {
