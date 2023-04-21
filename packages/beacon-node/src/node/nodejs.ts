@@ -215,7 +215,10 @@ export class BeaconNode {
 
     if (opts.chain.persistInvalidSszObjects && opts.chain.persistInvalidSszObjectsRetention !== 0) {
       void chain.prunePastInvalidSszObjects();
-      setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
+      const pruneIntervalId = setInterval(() => chain.prunePastInvalidSszObjects(), 1000 * 60 * 60);
+      signal.addEventListener("abort", () => {
+        clearInterval(pruneIntervalId);
+      });
     }
 
     // Network needs to be initialized before the sync
