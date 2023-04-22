@@ -21,7 +21,7 @@ import {logFilesDir} from "./params.js";
 import {shell} from "./shell.js";
 
 // NOTE: How to run
-// DEV_RUN=true EL_BINARY_DIR=g11tech/ethereumjs:decoupled EL_SCRIPT_DIR=ethereumjsdocker yarn mocha test/sim/4844-interop.test.ts
+// DEV_RUN=true EL_BINARY_DIR=g11tech/ethereumjs:blobs-f9764 EL_SCRIPT_DIR=ethereumjsdocker yarn mocha test/sim/4844-interop.test.ts
 // ```
 
 /* eslint-disable no-console, @typescript-eslint/naming-convention */

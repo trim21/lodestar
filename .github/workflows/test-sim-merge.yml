@@ -14,7 +14,7 @@ env:
   GETH_WITHDRAWALS_IMAGE: g11tech/geth:withdrawalsfeb8
   ETHEREUMJS_WITHDRAWALS_IMAGE: g11tech/ethereumjs:latest
   NETHERMIND_WITHDRAWALS_IMAGE: nethermindeth/nethermind:withdrawals_yolo
-  ETHEREUMJS_BLOBS_IMAGE: g11tech/ethereumjs:blobs-dd735
+  ETHEREUMJS_BLOBS_IMAGE: g11tech/ethereumjs:blobs-f9764
 
 jobs:
   sim-merge-tests:
